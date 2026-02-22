@@ -23,14 +23,31 @@ export default function AdminPage() {
       return;
     }
 
-    supabase.auth.getUser().then(({ data: { user } }: { data: { user: { email?: string } | null } }) => {
-      if (!user) {
-        router.replace("/admin/login");
-      } else {
-        setUserEmail(user.email ?? "Admin");
-      }
+    // Timeout: redirect to login if auth check takes longer than 5s
+    const timeout = setTimeout(() => {
       setChecking(false);
-    });
+      router.replace("/admin/login");
+    }, 5000);
+
+    // Use getSession() first — reads from cookies, no network request
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }: { data: { session: { user?: { email?: string } } | null } }) => {
+        clearTimeout(timeout);
+        if (!session) {
+          router.replace("/admin/login");
+        } else {
+          setUserEmail(session.user?.email ?? "Admin");
+        }
+        setChecking(false);
+      })
+      .catch(() => {
+        clearTimeout(timeout);
+        setChecking(false);
+        router.replace("/admin/login");
+      });
+
+    return () => clearTimeout(timeout);
   }, [router]);
 
   if (!supabaseEnabled) {
@@ -50,7 +67,7 @@ export default function AdminPage() {
   if (checking) {
     return (
       <section className="flex min-h-[80vh] items-center justify-center px-6">
-        <p className="text-sm text-white/30">Checking authentication...</p>
+        <p className="text-sm text-white/30 animate-pulse">Checking authentication...</p>
       </section>
     );
   }
