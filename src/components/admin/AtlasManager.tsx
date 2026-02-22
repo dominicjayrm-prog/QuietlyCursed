@@ -5,6 +5,8 @@ import { getSupabase } from "@/lib/supabase/client";
 import dynamic from "next/dynamic";
 import type { TipTapJSON } from "./RichTextEditor";
 
+const BANNER_BUCKET = "atlas-banners";
+
 const RichTextEditor = dynamic(() => import("./RichTextEditor"), {
   ssr: false,
   loading: () => (
@@ -83,6 +85,8 @@ export default function AtlasManager() {
   const [error, setError] = useState("");
   const [titleManuallyEdited, setTitleManuallyEdited] = useState(false);
   const [tableStatus, setTableStatus] = useState<"checking" | "ok" | "missing">("checking");
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const bannerFileRef = useRef<HTMLInputElement>(null);
 
   // Track the editor JSON separately so we don't re-render the editor on every keystroke
   const editorJsonRef = useRef<TipTapJSON | null>(null);
@@ -174,6 +178,60 @@ export default function AtlasManager() {
     });
   }
 
+  async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingBanner(true);
+    const supabase = getSupabase();
+    if (!supabase) {
+      setUploadingBanner(false);
+      return;
+    }
+
+    // Remove old banner from storage if replacing
+    if (form.banner_url) {
+      const oldPath = form.banner_url.match(new RegExp(`${BANNER_BUCKET}/(.+)$`));
+      if (oldPath) {
+        await supabase.storage.from(BANNER_BUCKET).remove([oldPath[1]]);
+      }
+    }
+
+    const ext = file.name.split(".").pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(BANNER_BUCKET)
+      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+
+    if (uploadError) {
+      setError("Banner upload failed: " + uploadError.message);
+      setUploadingBanner(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from(BANNER_BUCKET)
+      .getPublicUrl(fileName);
+
+    updateField("banner_url", urlData.publicUrl);
+    setUploadingBanner(false);
+    if (bannerFileRef.current) bannerFileRef.current.value = "";
+  }
+
+  async function removeBanner() {
+    const supabase = getSupabase();
+    if (!supabase || !form.banner_url) return;
+
+    // Remove from storage if it's in our bucket
+    const pathMatch = form.banner_url.match(new RegExp(`${BANNER_BUCKET}/(.+)$`));
+    if (pathMatch) {
+      await supabase.storage.from(BANNER_BUCKET).remove([pathMatch[1]]);
+    }
+
+    updateField("banner_url", "");
+  }
+
   async function handleSave() {
     setError("");
     if (!form.title.trim()) {
@@ -237,6 +295,16 @@ export default function AtlasManager() {
     if (!confirm("Delete this post? This cannot be undone.")) return;
     const token = await getToken();
     if (!token) return;
+
+    // Clean up banner from storage
+    const post = posts.find((p) => p.id === id);
+    if (post?.banner_url) {
+      const supabase = getSupabase();
+      const pathMatch = post.banner_url.match(new RegExp(`${BANNER_BUCKET}/(.+)$`));
+      if (supabase && pathMatch) {
+        await supabase.storage.from(BANNER_BUCKET).remove([pathMatch[1]]);
+      }
+    }
 
     await fetch(`/api/admin/atlas/${id}`, {
       method: "DELETE",
@@ -451,30 +519,69 @@ export default function AtlasManager() {
           />
         </div>
 
-        {/* Banner Image URL */}
+        {/* Banner Image Upload */}
         <div>
           <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/40">
-            Banner Image URL
+            Banner Image
           </label>
-          <input
-            value={form.banner_url ?? ""}
-            onChange={(e) => updateField("banner_url", e.target.value)}
-            placeholder="https://example.com/banner.jpg"
-            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:border-cyan-500/40 focus:outline-none"
-          />
-          {form.banner_url && (
-            <div className="mt-2 overflow-hidden rounded-lg border border-white/5">
+          {form.banner_url ? (
+            <div className="relative overflow-hidden rounded-lg border border-white/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={form.banner_url}
                 alt="Banner preview"
-                className="h-32 w-full object-cover"
+                className="h-40 w-full object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
+              <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/50 opacity-0 transition-opacity hover:opacity-100">
+                <label
+                  htmlFor="banner-upload"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-xs font-medium text-white backdrop-blur-sm hover:bg-white/20"
+                >
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                  </svg>
+                  Replace
+                </label>
+                <button
+                  type="button"
+                  onClick={removeBanner}
+                  className="inline-flex items-center gap-2 rounded-lg bg-red-500/20 px-4 py-2 text-xs font-medium text-red-400 backdrop-blur-sm hover:bg-red-500/30 cursor-pointer"
+                >
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                  </svg>
+                  Remove
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
+              <label
+                htmlFor="banner-upload"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-5 py-2.5 text-sm font-medium text-cyan-400 transition-colors hover:bg-cyan-500/20"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                </svg>
+                {uploadingBanner ? "Uploading..." : "Upload Banner"}
+              </label>
+              <p className="mt-3 text-xs text-white/20">
+                PNG, JPG, or WebP. Displayed as the post&apos;s hero image.
+              </p>
             </div>
           )}
+          <input
+            ref={bannerFileRef}
+            type="file"
+            accept="image/*"
+            onChange={handleBannerUpload}
+            className="hidden"
+            id="banner-upload"
+            disabled={uploadingBanner}
+          />
         </div>
 
         {/* YouTube URL */}
