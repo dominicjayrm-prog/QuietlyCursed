@@ -28,6 +28,7 @@ interface AtlasPost {
   content_json: Record<string, unknown> | null;
   content_format: "markdown" | "json";
   banner_url: string | null;
+  banner_alt: string | null;
   meta_title: string | null;
   meta_description: string | null;
   related_posts: string[];
@@ -49,6 +50,7 @@ const EMPTY_FORM: PostForm = {
   content_json: null,
   content_format: "json",
   banner_url: "",
+  banner_alt: "",
   meta_title: "",
   meta_description: "",
   related_posts: [],
@@ -153,6 +155,7 @@ export default function AtlasManager() {
       content_json: post.content_json,
       content_format: post.content_format || "markdown",
       banner_url: post.banner_url ?? "",
+      banner_alt: post.banner_alt ?? "",
       meta_title: post.meta_title ?? "",
       meta_description: post.meta_description ?? "",
       related_posts: post.related_posts ?? [],
@@ -261,6 +264,7 @@ export default function AtlasManager() {
       content_json: editorJsonRef.current ?? form.content_json ?? null,
       content_format: "json" as const,
       banner_url: form.banner_url || null,
+      banner_alt: form.banner_alt || null,
       meta_title: form.meta_title || null,
       meta_description: form.meta_description || null,
     };
@@ -582,6 +586,19 @@ export default function AtlasManager() {
             id="banner-upload"
             disabled={uploadingBanner}
           />
+          {form.banner_url && (
+            <div className="mt-3">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/40">
+                Banner Alt Text
+              </label>
+              <input
+                value={form.banner_alt ?? ""}
+                onChange={(e) => updateField("banner_alt", e.target.value)}
+                placeholder="Describe the banner image for accessibility and SEO"
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:border-cyan-500/40 focus:outline-none"
+              />
+            </div>
+          )}
         </div>
 
         {/* YouTube URL */}

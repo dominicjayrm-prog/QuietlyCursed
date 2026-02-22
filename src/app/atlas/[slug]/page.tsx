@@ -80,7 +80,7 @@ export default async function AtlasPostPage({ params }: PageProps) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.banner_url}
-              alt={post.title}
+              alt={post.banner_alt || post.title}
               className="w-full object-cover"
             />
           </div>

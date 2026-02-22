@@ -118,6 +118,7 @@ export function buildAtlasPostJsonLd(post: AtlasPost): string {
     jsonLd.image = {
       "@type": "ImageObject",
       url: post.banner_url,
+      ...(post.banner_alt ? { description: post.banner_alt } : {}),
     };
   }
 

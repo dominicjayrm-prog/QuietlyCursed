@@ -12,6 +12,7 @@ export interface AtlasPost {
   content_json: Record<string, unknown> | null;
   content_format: "markdown" | "json";
   banner_url: string | null;
+  banner_alt: string | null;
   meta_title: string | null;
   meta_description: string | null;
   related_posts: string[];
