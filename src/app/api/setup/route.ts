@@ -136,6 +136,12 @@ export async function POST(request: Request) {
         EXECUTE FUNCTION update_atlas_posts_updated_at()
     `;
 
+    // Rich editor & banner columns (idempotent)
+    await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS content_json jsonb`;
+    await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS content_format text DEFAULT 'markdown'`;
+    await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_url text`;
+    await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_alt text`;
+
     await sql.end();
 
     return NextResponse.json({
