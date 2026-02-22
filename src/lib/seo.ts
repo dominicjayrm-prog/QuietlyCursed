@@ -1,0 +1,80 @@
+import type { Metadata } from "next";
+import type { Trap } from "@/data/traps";
+
+const SITE_URL = "https://quietlycursed.com";
+const SITE_NAME = "Quietly Cursed";
+const DEFAULT_DESCRIPTION =
+  "Explore the psychological traps that silently shape your decisions. A dark, minimalist atlas of the mind.";
+
+export function buildMetadata(overrides?: {
+  title?: string;
+  description?: string;
+  path?: string;
+  image?: string;
+}): Metadata {
+  const title = overrides?.title
+    ? `${overrides.title} | ${SITE_NAME}`
+    : SITE_NAME;
+  const description = overrides?.description ?? DEFAULT_DESCRIPTION;
+  const url = overrides?.path ? `${SITE_URL}${overrides.path}` : SITE_URL;
+  const image = overrides?.image ?? `${SITE_URL}/og-default.png`;
+
+  return {
+    title,
+    description,
+    metadataBase: new URL(SITE_URL),
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: SITE_NAME,
+      images: [{ url: image, width: 1200, height: 630 }],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
+
+export function buildTrapJsonLd(trap: Trap): string {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: trap.title,
+    description: trap.tagline,
+    datePublished: trap.publishedAt,
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${SITE_URL}/atlas/${trap.slug}`,
+    },
+    video: {
+      "@type": "VideoObject",
+      name: trap.title,
+      embedUrl: `https://www.youtube.com/embed/${trap.youtubeId}`,
+    },
+  });
+}
+
+export function buildWebsiteJsonLd(): string {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: SITE_URL,
+    description: DEFAULT_DESCRIPTION,
+  });
+}
