@@ -7,6 +7,7 @@ import EyeGlow from "./EyeGlow";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/atlas", label: "Atlas" },
+  { href: "/trait-index", label: "Trait Index" },
   { href: "/mascot", label: "Mascot" },
 ];
 

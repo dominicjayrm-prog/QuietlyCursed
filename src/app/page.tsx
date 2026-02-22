@@ -59,6 +59,28 @@ export default function HomePage() {
         </p>
       </section>
 
+      {/* Trait Index CTA */}
+      <section className="border-t border-white/5 bg-white/[0.01]">
+        <div className="mx-auto max-w-3xl px-6 py-20 text-center">
+          <EyeGlow size="sm" className="mx-auto mb-6 w-8 h-4 opacity-50" />
+          <h2 className="mb-4 text-2xl font-semibold text-white/80 md:text-3xl">
+            The Trait Index
+          </h2>
+          <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-white/45 md:text-lg">
+            12 questions. 6 archetypes. Discover which psychological pattern
+            runs deepest — The Watcher, The Prototype, The Container, The
+            Climber, The Ghost, or The Peacemaker.
+          </p>
+          <Link
+            href="/trait-index"
+            className="inline-flex items-center gap-3 rounded-full border border-purple-500/30 bg-purple-500/10 px-8 py-3.5 text-sm font-semibold tracking-wider uppercase text-purple-400 transition-all hover:bg-purple-500/20 hover:border-purple-400/50"
+          >
+            <BrainIcon className="w-4 h-4 text-cyan-400" />
+            Take the Trait Index
+          </Link>
+        </div>
+      </section>
+
       {/* Stats / social proof */}
       <section className="border-y border-white/5 bg-white/[0.01]">
         <div className="mx-auto grid max-w-4xl grid-cols-1 gap-8 px-6 py-16 text-center md:grid-cols-3">
