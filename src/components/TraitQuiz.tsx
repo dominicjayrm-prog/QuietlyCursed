@@ -10,6 +10,7 @@ import {
   type ArchetypeProfile,
 } from "@/data/trait-index";
 import { getTrapBySlug } from "@/data/traps";
+import { getSupabase } from "@/lib/supabase/client";
 import TrapCard from "./TrapCard";
 import YouTubeEmbed from "./YouTubeEmbed";
 import BrainIcon from "./BrainIcon";
@@ -66,6 +67,19 @@ export default function TraitQuiz() {
       secondary: ranked[1],
       scores,
     });
+
+    // Track quiz completion (fire-and-forget)
+    const supabase = getSupabase();
+    if (supabase) {
+      supabase
+        .from("quiz_results")
+        .insert({
+          primary_archetype: ranked[0].id,
+          secondary_archetype: ranked[1].id,
+          scores,
+        })
+        .then(() => {});
+    }
   }
 
   async function handleCopy() {

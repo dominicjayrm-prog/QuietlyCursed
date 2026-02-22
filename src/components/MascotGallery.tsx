@@ -7,8 +7,28 @@ interface MascotGalleryProps {
   images: MascotImage[];
 }
 
-export default function MascotGallery({ images }: MascotGalleryProps) {
+export default function MascotGallery({ images: staticImages }: MascotGalleryProps) {
+  const [images, setImages] = useState<MascotImage[]>(staticImages);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  // Try to load DB images (uploaded via admin); fall back to static
+  useEffect(() => {
+    async function loadFromDb() {
+      const { getSupabase } = await import("@/lib/supabase/client");
+      const supabase = getSupabase();
+      if (!supabase) return;
+
+      const { data } = await supabase
+        .from("gallery_images")
+        .select("src, alt, caption")
+        .order("sort_order", { ascending: true });
+
+      if (data && data.length > 0) {
+        setImages(data);
+      }
+    }
+    loadFromDb().catch(() => {});
+  }, []);
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
 
