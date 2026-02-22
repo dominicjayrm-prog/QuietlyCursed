@@ -1,32 +1,53 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
-import EyeGlow from "@/components/EyeGlow";
-import TraitQuiz from "@/components/TraitQuiz";
+import TraitIndexLanding from "@/components/TraitIndexLanding";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Trait Index",
+  title: "The Trait Index — Dark Psychology Personality Quiz",
   description:
-    "Discover your psychological archetype. A 12-question personality quiz that maps your hidden patterns — The Watcher, The Prototype, The Container, The Climber, The Ghost, or The Peacemaker.",
+    "A psychologically serious archetype assessment. 12 questions. 6 archetypes. Discover which psychological identity pattern runs deepest — The Watcher, The Prototype, The Climber, The Ghost, The Container, or The Peacemaker.",
   path: "/trait-index",
 });
 
+function TraitIndexJsonLd() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Quiz",
+    name: "The Trait Index — Psychological Archetype Quiz",
+    description:
+      "A 12-question psychological archetype assessment that identifies your dominant identity pattern across six archetypes: The Watcher, The Prototype, The Climber, The Ghost, The Container, and The Peacemaker.",
+    url: "https://quietlycursed.com/trait-index",
+    provider: {
+      "@type": "Organization",
+      name: "Quietly Cursed",
+      url: "https://quietlycursed.com",
+    },
+    about: {
+      "@type": "Thing",
+      name: "Psychological Archetypes",
+      description:
+        "Dark psychology personality quiz exploring psychological identity patterns and archetype assessment.",
+    },
+    numberOfQuestions: 12,
+    timeRequired: "PT3M",
+    educationalLevel: "General",
+    keywords:
+      "dark psychology personality quiz, psychological archetype quiz, what type of person am I quiz psychology, personality assessment, archetype test",
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 export default function TraitIndexPage() {
   return (
-    <section className="mx-auto max-w-3xl px-6 py-16 md:py-24">
-      {/* Header */}
-      <div className="mb-12 text-center">
-        <EyeGlow size="sm" className="mx-auto mb-6 w-10 h-5" />
-        <h1 className="mb-3 text-3xl font-bold tracking-tight text-white md:text-5xl">
-          The Trait Index
-        </h1>
-        <p className="mx-auto max-w-lg text-base text-white/45 md:text-lg">
-          12 questions. 6 archetypes. Discover which psychological pattern
-          runs deepest in you.
-        </p>
-      </div>
-
-      {/* Quiz */}
-      <TraitQuiz />
-    </section>
+    <>
+      <TraitIndexJsonLd />
+      <TraitIndexLanding />
+    </>
   );
 }

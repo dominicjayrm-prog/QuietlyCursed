@@ -90,6 +90,18 @@ body {
   box-shadow: 0 0 30px -10px rgba(34, 211, 238, 0.08);
 }
 
+/* Scroll-triggered fade in */
+.fade-in-hidden {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-in-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* Selection color */
 ::selection {
   background: rgba(34, 211, 238, 0.2);

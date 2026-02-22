@@ -14,7 +14,7 @@ export default function MascotPage() {
   return (
     <section className="mx-auto max-w-5xl px-6 py-16 md:py-24">
       {/* Hero */}
-      <div className="mb-16 text-center">
+      <div className="mb-16 text-center animate-fade-in-up">
         <div className="mx-auto mb-6 flex justify-center">
           <EyeGlow size="lg" className="w-32 h-16" />
         </div>
@@ -25,7 +25,7 @@ export default function MascotPage() {
       </div>
 
       {/* Lore */}
-      <div className="mx-auto mb-20 max-w-2xl space-y-8 text-center">
+      <div className="mx-auto mb-20 max-w-2xl space-y-8 text-center animate-fade-in-up-delay-1">
         {mascotLore.description.split("\n\n").map((paragraph, i) => (
           <p
             key={i}
@@ -43,7 +43,7 @@ export default function MascotPage() {
       </div>
 
       {/* Manifestations */}
-      <div className="mb-8">
+      <div className="mb-8 animate-fade-in-up-delay-2">
         <h2 className="mb-3 text-center text-2xl font-semibold text-white/70">
           Manifestations
         </h2>
