@@ -9,6 +9,9 @@ export interface AtlasPost {
   youtube_video_id: string | null;
   featured_description: string | null;
   content: string | null;
+  content_json: Record<string, unknown> | null;
+  content_format: "markdown" | "json";
+  banner_url: string | null;
   meta_title: string | null;
   meta_description: string | null;
   related_posts: string[];

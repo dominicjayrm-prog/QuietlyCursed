@@ -114,6 +114,13 @@ export function buildAtlasPostJsonLd(post: AtlasPost): string {
     ],
   };
 
+  if (post.banner_url) {
+    jsonLd.image = {
+      "@type": "ImageObject",
+      url: post.banner_url,
+    };
+  }
+
   if (post.youtube_video_id) {
     jsonLd.video = {
       "@type": "VideoObject",
