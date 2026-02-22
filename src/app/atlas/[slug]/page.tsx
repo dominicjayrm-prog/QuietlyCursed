@@ -9,6 +9,7 @@ import {
 import { buildMetadata, buildAtlasPostJsonLd } from "@/lib/seo";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import MarkdownContent from "@/components/MarkdownContent";
+import RichContentRenderer from "@/components/RichContentRenderer";
 import BrainIcon from "@/components/BrainIcon";
 import EyeGlow from "@/components/EyeGlow";
 
@@ -35,6 +36,7 @@ export async function generateMetadata({
     description:
       post.meta_description || post.subtitle || post.featured_description || "",
     path: `/atlas/${post.slug}`,
+    image: post.banner_url || undefined,
     type: "article",
   });
 }
@@ -45,6 +47,8 @@ export default async function AtlasPostPage({ params }: PageProps) {
   if (!post) notFound();
 
   const related = await getRelatedPosts(post.related_posts ?? []);
+  const hasJsonContent =
+    post.content_format === "json" && post.content_json != null;
 
   return (
     <>
@@ -69,6 +73,18 @@ export default async function AtlasPostPage({ params }: PageProps) {
           <span>/</span>
           <span className="text-white/50">{post.title}</span>
         </nav>
+
+        {/* Banner Image */}
+        {post.banner_url && (
+          <div className="mb-10 overflow-hidden rounded-2xl border border-white/5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.banner_url}
+              alt={post.title}
+              className="w-full object-cover"
+            />
+          </div>
+        )}
 
         {/* Title block */}
         <header className="mb-12">
@@ -100,12 +116,18 @@ export default async function AtlasPostPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Article Content */}
-        {post.content && (
+        {/* Article Content — JSON (rich editor) or Markdown (legacy) */}
+        {hasJsonContent ? (
+          <div className="mb-16">
+            <RichContentRenderer
+              content={post.content_json as Parameters<typeof RichContentRenderer>[0]["content"]}
+            />
+          </div>
+        ) : post.content ? (
           <div className="mb-16">
             <MarkdownContent content={post.content} />
           </div>
-        )}
+        ) : null}
 
         {/* Related Posts */}
         {related.length > 0 && (

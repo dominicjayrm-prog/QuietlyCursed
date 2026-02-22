@@ -1,7 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getSupabase } from "@/lib/supabase/client";
+import dynamic from "next/dynamic";
+import type { TipTapJSON } from "./RichTextEditor";
+
+const RichTextEditor = dynamic(() => import("./RichTextEditor"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-sm text-white/20">
+      Loading editor...
+    </div>
+  ),
+});
 
 interface AtlasPost {
   id: string;
@@ -12,6 +23,9 @@ interface AtlasPost {
   youtube_video_id: string | null;
   featured_description: string | null;
   content: string | null;
+  content_json: Record<string, unknown> | null;
+  content_format: "markdown" | "json";
+  banner_url: string | null;
   meta_title: string | null;
   meta_description: string | null;
   related_posts: string[];
@@ -30,6 +44,9 @@ const EMPTY_FORM: PostForm = {
   youtube_video_id: "",
   featured_description: "",
   content: "",
+  content_json: null,
+  content_format: "json",
+  banner_url: "",
   meta_title: "",
   meta_description: "",
   related_posts: [],
@@ -67,7 +84,11 @@ export default function AtlasManager() {
   const [titleManuallyEdited, setTitleManuallyEdited] = useState(false);
   const [tableStatus, setTableStatus] = useState<"checking" | "ok" | "missing">("checking");
 
-  // Check if atlas_posts table exists
+  // Track the editor JSON separately so we don't re-render the editor on every keystroke
+  const editorJsonRef = useRef<TipTapJSON | null>(null);
+  // Key to force remount editor when switching posts
+  const [editorKey, setEditorKey] = useState(0);
+
   useEffect(() => {
     fetch("/api/setup")
       .then((r) => r.json())
@@ -106,13 +127,17 @@ export default function AtlasManager() {
 
   function openCreate() {
     setForm({ ...EMPTY_FORM });
+    editorJsonRef.current = null;
     setEditingId(null);
     setTitleManuallyEdited(false);
     setError("");
+    setEditorKey((k) => k + 1);
     setView("form");
   }
 
   function openEdit(post: AtlasPost) {
+    const contentJson = post.content_json as TipTapJSON | null;
+    editorJsonRef.current = contentJson;
     setForm({
       title: post.title,
       slug: post.slug,
@@ -121,6 +146,9 @@ export default function AtlasManager() {
       youtube_video_id: post.youtube_video_id ?? "",
       featured_description: post.featured_description ?? "",
       content: post.content ?? "",
+      content_json: post.content_json,
+      content_format: post.content_format || "markdown",
+      banner_url: post.banner_url ?? "",
       meta_title: post.meta_title ?? "",
       meta_description: post.meta_description ?? "",
       related_posts: post.related_posts ?? [],
@@ -129,23 +157,19 @@ export default function AtlasManager() {
     setEditingId(post.id);
     setTitleManuallyEdited(true);
     setError("");
+    setEditorKey((k) => k + 1);
     setView("form");
   }
 
-  function updateField(key: keyof PostForm, value: string | boolean | string[]) {
+  function updateField(key: keyof PostForm, value: string | boolean | string[] | Record<string, unknown> | null) {
     setForm((prev) => {
       const next = { ...prev, [key]: value };
-
-      // Auto-generate slug from title
       if (key === "title" && !titleManuallyEdited) {
         next.slug = slugify(value as string);
       }
-
-      // Auto-extract YouTube ID from URL
       if (key === "youtube_url") {
         next.youtube_video_id = extractYouTubeId(value as string);
       }
-
       return next;
     });
   }
@@ -176,6 +200,9 @@ export default function AtlasManager() {
       youtube_video_id: form.youtube_video_id || null,
       featured_description: form.featured_description || null,
       content: form.content || null,
+      content_json: editorJsonRef.current ?? form.content_json ?? null,
+      content_format: "json" as const,
+      banner_url: form.banner_url || null,
       meta_title: form.meta_title || null,
       meta_description: form.meta_description || null,
     };
@@ -248,9 +275,9 @@ export default function AtlasManager() {
               <strong className="text-white/60">
                 Supabase Dashboard &rarr; SQL Editor
               </strong>{" "}
-              and run the migration SQL found in{" "}
+              and run the migration SQL files in{" "}
               <code className="text-cyan-400">
-                supabase/migrations/001_atlas_posts.sql
+                supabase/migrations/
               </code>
               .
             </p>
@@ -356,6 +383,7 @@ export default function AtlasManager() {
 
   // --- Form View ---
   const availableRelated = posts.filter((p) => p.id !== editingId);
+  const initialEditorContent = (form.content_json as TipTapJSON | null) ?? null;
 
   return (
     <div className="space-y-6">
@@ -423,6 +451,32 @@ export default function AtlasManager() {
           />
         </div>
 
+        {/* Banner Image URL */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/40">
+            Banner Image URL
+          </label>
+          <input
+            value={form.banner_url ?? ""}
+            onChange={(e) => updateField("banner_url", e.target.value)}
+            placeholder="https://example.com/banner.jpg"
+            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:border-cyan-500/40 focus:outline-none"
+          />
+          {form.banner_url && (
+            <div className="mt-2 overflow-hidden rounded-lg border border-white/5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={form.banner_url}
+                alt="Banner preview"
+                className="h-32 w-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            </div>
+          )}
+        </div>
+
         {/* YouTube URL */}
         <div>
           <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/40">
@@ -483,17 +537,18 @@ export default function AtlasManager() {
           </div>
         </div>
 
-        {/* Content (rich text / markdown) */}
+        {/* Article Content — Rich Text Editor */}
         <div>
           <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/40">
-            Article Content (Markdown)
+            Article Content
           </label>
-          <textarea
-            value={form.content ?? ""}
-            onChange={(e) => updateField("content", e.target.value)}
-            placeholder="Write your long-form article content here. Supports Markdown formatting..."
-            rows={16}
-            className="w-full resize-y rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm leading-relaxed text-white placeholder:text-white/20 focus:border-cyan-500/40 focus:outline-none font-mono"
+          <RichTextEditor
+            key={editorKey}
+            initialContent={initialEditorContent}
+            onChange={(json) => {
+              editorJsonRef.current = json;
+            }}
+            placeholder="Start writing your article..."
           />
         </div>
 
