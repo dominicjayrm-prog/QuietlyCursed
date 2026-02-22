@@ -18,23 +18,23 @@ The Watcher appears throughout the channel's content — lurking in thumbnails, 
 
 export const mascotGallery: MascotImage[] = [
   {
-    src: "/mascot/watcher-default.svg",
-    alt: "The Watcher — default pose with glowing cyan eyes",
-    caption: "The default silhouette. Cyan eyes, purple mind.",
+    src: "/mascot/gallery/watcher-ledge.svg",
+    alt: "The Watcher standing on a ledge overlooking ruins, glowing cyan eyes piercing through mist",
+    caption: "Standing at the edge. Observing what others refuse to see.",
   },
   {
-    src: "/mascot/watcher-watching.svg",
-    alt: "The Watcher observing from the shadows",
-    caption: "Lurking at the edges. Always present, never the focus.",
+    src: "/mascot/gallery/watcher-portrait.svg",
+    alt: "Close-up portrait of The Watcher, hooded face with intense glowing cyan eyes",
+    caption: "The gaze that sees through every pattern, every lie, every trap.",
   },
   {
-    src: "/mascot/watcher-glitch.svg",
-    alt: "The Watcher glitching — distorted silhouette",
-    caption: "When a bias is triggered, The Watcher distorts.",
+    src: "/mascot/gallery/watcher-corridor.svg",
+    alt: "The Watcher standing in a dark corridor surrounded by debris and atmospheric fog",
+    caption: "Lurking in the corridors of the mind. Always present, never the focus.",
   },
   {
-    src: "/mascot/watcher-emblem.svg",
-    alt: "The Watcher emblem — brain symbol with eye motif",
-    caption: "The emblem. Clarity and complexity intertwined.",
+    src: "/mascot/gallery/watcher-reaching.svg",
+    alt: "The Watcher in a dynamic pose, reaching out with purple energy emanating from hand",
+    caption: "When a bias is triggered, The Watcher intervenes.",
   },
 ];

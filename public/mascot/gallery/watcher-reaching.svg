@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" fill="none">
+  <defs>
+    <radialGradient id="bg4" cx="40%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#0d1012"/>
+      <stop offset="100%" stop-color="#040506"/>
+    </radialGradient>
+    <radialGradient id="actionGlow" cx="50%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow4" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="fogBlur4" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+    <linearGradient id="energyLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#22d3ee" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#bg4)"/>
+
+  <!-- Environment - angular architecture -->
+  <path d="M0 200 L150 250 L150 800 L0 850Z" fill="#0b0e10" opacity="0.6"/>
+  <path d="M800 180 L620 240 L620 780 L800 830Z" fill="#0b0e10" opacity="0.5"/>
+  <line x1="150" y1="250" x2="150" y2="800" stroke="#161a1c" stroke-width="1" opacity="0.3"/>
+  <line x1="620" y1="240" x2="620" y2="780" stroke="#161a1c" stroke-width="1" opacity="0.3"/>
+
+  <!-- Diagonal energy lines -->
+  <line x1="100" y1="300" x2="700" y2="350" stroke="url(#energyLine)" stroke-width="1" opacity="0.3">
+    <animate attributeName="opacity" values="0.3;0.1;0.3" dur="4s" repeatCount="indefinite"/>
+  </line>
+  <line x1="150" y1="500" x2="650" y2="480" stroke="url(#energyLine)" stroke-width="0.5" opacity="0.2">
+    <animate attributeName="opacity" values="0.2;0.05;0.2" dur="5s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- Ground -->
+  <path d="M0 780 Q400 800 800 770 L800 1000 L0 1000Z" fill="#080a0b"/>
+
+  <!-- Atmospheric fog -->
+  <ellipse cx="350" cy="750" rx="300" ry="100" fill="#22d3ee" opacity="0.025" filter="url(#fogBlur4)"/>
+  <ellipse cx="450" cy="400" rx="200" ry="150" fill="url(#actionGlow)"/>
+
+  <!-- Figure - dynamic side pose, leaning forward -->
+  <path d="M370 260 Q310 340 290 460 Q275 560 265 660 Q258 720 255 770 L470 770 Q465 720 455 660 Q440 560 420 460 Q400 340 370 260Z" fill="#0b0b0b"/>
+
+  <!-- Forward-leaning cloak with wind -->
+  <path d="M420 460 Q460 520 500 600 Q530 680 540 770" stroke="#131516" stroke-width="1" fill="none" opacity="0.3"/>
+  <path d="M370 260 Q310 340 290 460 Q275 560 265 660" stroke="#181b1d" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M370 260 Q400 340 420 460 Q440 560 455 660" stroke="#181b1d" stroke-width="1" fill="none" opacity="0.3"/>
+
+  <!-- Wind-blown cloak extension -->
+  <path d="M455 500 Q500 520 540 560 Q570 600 580 650 Q575 670 555 680 Q520 660 490 620 Q465 570 455 500Z" fill="#0a0a0a" opacity="0.7"/>
+  <path d="M455 500 Q500 520 540 560 Q570 600 580 650" stroke="#161819" stroke-width="1" fill="none" opacity="0.3"/>
+
+  <!-- Hood - slightly turned -->
+  <path d="M335 320 Q335 275 358 250 Q378 232 398 245 Q425 268 430 320 Q420 340 378 348 Q345 342 335 320Z" fill="#080808"/>
+  <path d="M335 320 Q335 275 358 250 Q378 232 398 245 Q425 268 430 320" stroke="#1a1d1f" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+  <!-- Eyes - slightly asymmetric for turned head -->
+  <ellipse cx="360" cy="302" rx="6" ry="4" fill="#22d3ee" opacity="0.85" filter="url(#glow4)">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2.5s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="395" cy="300" rx="7" ry="4.5" fill="#22d3ee" opacity="0.9" filter="url(#glow4)">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2.5s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="360" cy="302" rx="2.5" ry="2" fill="#fff" opacity="0.9"/>
+  <ellipse cx="395" cy="300" rx="3" ry="2" fill="#fff" opacity="0.95"/>
+
+  <!-- Extended arm/reach gesture -->
+  <path d="M310 420 Q280 400 250 390 Q230 385 215 388" stroke="#0e0e0e" stroke-width="12" stroke-linecap="round" fill="none"/>
+  <path d="M310 420 Q280 400 250 390 Q230 385 215 388" stroke="#131516" stroke-width="1" fill="none" opacity="0.3"/>
+
+  <!-- Hand energy effect -->
+  <circle cx="215" cy="388" r="8" fill="#a855f7" opacity="0.1" filter="url(#fogBlur4)"/>
+  <circle cx="215" cy="388" r="3" fill="#a855f7" opacity="0.3">
+    <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Brain symbol glowing brighter -->
+  <path d="M365 410 Q380 396 395 410 Q402 422 395 434 Q380 442 365 434 Q358 422 365 410Z" stroke="#a855f7" stroke-width="1.5" fill="none" opacity="0.4">
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Floating particles - more dynamic -->
+  <circle cx="200" cy="350" r="1.5" fill="#a855f7" opacity="0.25">
+    <animate attributeName="cx" values="200;180;200" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="350;330;350" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="500" cy="300" r="1" fill="#22d3ee" opacity="0.2">
+    <animate attributeName="cx" values="500;520;500" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="300" cy="550" r="1" fill="#22d3ee" opacity="0.15">
+    <animate attributeName="cy" values="550;530;550" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="550" cy="500" r="1.5" fill="#a855f7" opacity="0.18">
+    <animate attributeName="cy" values="500;480;500" dur="4.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.18;0.05;0.18" dur="4.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="170" cy="500" r="1" fill="#22d3ee" opacity="0.12">
+    <animate attributeName="cy" values="500;485;500" dur="7s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="600" cy="600" r="1" fill="#22d3ee" opacity="0.15">
+    <animate attributeName="cx" values="600;610;600" dur="5s" repeatCount="indefinite"/>
+  </circle>
+</svg>
