@@ -20,7 +20,7 @@ export default async function AtlasPage() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
       {/* Header */}
-      <div className="mb-16 text-center">
+      <div className="mb-16 text-center animate-fade-in-up">
         <EyeGlow size="sm" className="mx-auto mb-6 w-10 h-5" />
         <h1 className="mb-4 text-3xl font-bold tracking-tight text-white md:text-5xl">
           The Atlas
@@ -33,7 +33,7 @@ export default async function AtlasPage() {
 
       {/* Grid */}
       {posts.length === 0 ? (
-        <div className="mx-auto max-w-md rounded-2xl border border-white/5 bg-white/[0.02] p-12 text-center">
+        <div className="mx-auto max-w-md rounded-2xl border border-white/5 bg-white/[0.02] p-12 text-center animate-fade-in-up-delay-1">
           <EyeGlow size="sm" className="mx-auto mb-4 w-8 h-4 opacity-30" />
           <p className="text-sm text-white/30">
             Case files are being compiled. The first entry is coming soon.
@@ -41,11 +41,15 @@ export default async function AtlasPage() {
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
+          {posts.map((post, i) => (
             <Link
               key={post.id}
               href={`/atlas/${post.slug}`}
-              className="group relative block rounded-2xl border border-white/5 bg-white/[0.02] p-6 transition-all duration-300 hover:border-cyan-500/20 hover:bg-white/[0.04] hover:shadow-[0_0_40px_-12px_rgba(34,211,238,0.15)]"
+              className={`group relative block rounded-2xl border border-white/5 bg-white/[0.02] p-6 transition-all duration-300 hover:border-cyan-500/20 hover:bg-white/[0.04] hover:shadow-[0_0_40px_-12px_rgba(34,211,238,0.15)] ${
+                i < 3
+                  ? `animate-fade-in-up-delay-${i + 1}`
+                  : "animate-fade-in-up-delay-3"
+              }`}
             >
               <div className="mb-4 flex items-center gap-3">
                 <BrainIcon className="w-5 h-5 text-purple-400/70 transition-colors group-hover:text-purple-400" />
