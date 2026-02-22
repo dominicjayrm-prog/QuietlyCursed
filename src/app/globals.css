@@ -80,6 +80,16 @@ body {
   animation: glow-pulse 3s ease-in-out infinite;
 }
 
+/* Trap section hover */
+.trap-section {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.trap-section:hover {
+  border-color: rgba(34, 211, 238, 0.12);
+  box-shadow: 0 0 30px -10px rgba(34, 211, 238, 0.08);
+}
+
 /* Selection color */
 ::selection {
   background: rgba(34, 211, 238, 0.2);

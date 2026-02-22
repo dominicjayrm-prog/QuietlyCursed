@@ -11,6 +11,7 @@ export function buildMetadata(overrides?: {
   description?: string;
   path?: string;
   image?: string;
+  type?: "website" | "article";
 }): Metadata {
   const title = overrides?.title
     ? `${overrides.title} | ${SITE_NAME}`
@@ -18,6 +19,7 @@ export function buildMetadata(overrides?: {
   const description = overrides?.description ?? DEFAULT_DESCRIPTION;
   const url = overrides?.path ? `${SITE_URL}${overrides.path}` : SITE_URL;
   const image = overrides?.image ?? `${SITE_URL}/og-default.png`;
+  const ogType = overrides?.type ?? "website";
 
   return {
     title,
@@ -29,7 +31,7 @@ export function buildMetadata(overrides?: {
       url,
       siteName: SITE_NAME,
       images: [{ url: image, width: 1200, height: 630 }],
-      type: "website",
+      type: ogType,
     },
     twitter: {
       card: "summary_large_image",
@@ -45,6 +47,7 @@ export function buildTrapJsonLd(trap: Trap): string {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: trap.title,
+    alternativeHeadline: trap.subtitle,
     description: trap.tagline,
     datePublished: trap.publishedAt,
     author: {
@@ -61,9 +64,18 @@ export function buildTrapJsonLd(trap: Trap): string {
       "@type": "WebPage",
       "@id": `${SITE_URL}/atlas/${trap.slug}`,
     },
+    articleSection: "Psychology",
+    keywords: [
+      "cognitive bias",
+      "psychological trap",
+      trap.title,
+      "mental model",
+      "decision making",
+    ],
     video: {
       "@type": "VideoObject",
       name: trap.title,
+      description: trap.tagline,
       embedUrl: `https://www.youtube.com/embed/${trap.youtubeId}`,
     },
   });
