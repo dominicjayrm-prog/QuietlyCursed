@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" fill="none">
+  <defs>
+    <radialGradient id="bg2" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#0d1215"/>
+      <stop offset="100%" stop-color="#040608"/>
+    </radialGradient>
+    <radialGradient id="faceGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow2" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="bigGlow2" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+    <filter id="medGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="800" fill="url(#bg2)"/>
+
+  <!-- Hood - large dramatic -->
+  <path d="M250 500 Q250 280 320 200 Q400 140 480 200 Q550 280 550 500 Q530 540 400 560 Q270 540 250 500Z" fill="#0a0a0a"/>
+  <path d="M250 500 Q250 280 320 200 Q400 140 480 200 Q550 280 550 500" stroke="#1a1a1a" stroke-width="2" fill="none" opacity="0.5"/>
+
+  <!-- Hood texture lines -->
+  <path d="M290 450 Q290 330 340 240" stroke="#131313" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M510 450 Q510 330 460 240" stroke="#131313" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M320 480 Q315 360 350 260" stroke="#111" stroke-width="0.5" fill="none" opacity="0.3"/>
+  <path d="M480 480 Q485 360 450 260" stroke="#111" stroke-width="0.5" fill="none" opacity="0.3"/>
+
+  <!-- Inner hood shadow -->
+  <path d="M280 480 Q280 310 345 230 Q400 180 455 230 Q520 310 520 480 Q500 510 400 520 Q300 510 280 480Z" fill="#070707"/>
+
+  <!-- Face area - deep shadow -->
+  <ellipse cx="400" cy="380" rx="90" ry="100" fill="#050505"/>
+
+  <!-- Ambient face glow from eyes -->
+  <ellipse cx="400" cy="360" rx="120" ry="80" fill="url(#faceGlow)"/>
+
+  <!-- Eye glow halos -->
+  <ellipse cx="365" cy="355" rx="40" ry="30" fill="#22d3ee" opacity="0.04" filter="url(#bigGlow2)"/>
+  <ellipse cx="435" cy="355" rx="40" ry="30" fill="#22d3ee" opacity="0.04" filter="url(#bigGlow2)"/>
+
+  <!-- Eye glow medium -->
+  <ellipse cx="365" cy="355" rx="18" ry="12" fill="#22d3ee" opacity="0.1" filter="url(#medGlow)"/>
+  <ellipse cx="435" cy="355" rx="18" ry="12" fill="#22d3ee" opacity="0.1" filter="url(#medGlow)"/>
+
+  <!-- Eyes -->
+  <ellipse cx="365" cy="355" rx="12" ry="7" fill="#22d3ee" opacity="0.9" filter="url(#glow2)">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2.8s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="435" cy="355" rx="12" ry="7" fill="#22d3ee" opacity="0.9" filter="url(#glow2)">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2.8s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- Eye bright cores -->
+  <ellipse cx="365" cy="355" rx="5" ry="3.5" fill="#ffffff" opacity="0.95"/>
+  <ellipse cx="435" cy="355" rx="5" ry="3.5" fill="#ffffff" opacity="0.95"/>
+
+  <!-- Eye reflections -->
+  <ellipse cx="362" cy="353" rx="2" ry="1.5" fill="#ffffff" opacity="0.5"/>
+  <ellipse cx="432" cy="353" rx="2" ry="1.5" fill="#ffffff" opacity="0.5"/>
+
+  <!-- Subtle nose/face structure -->
+  <line x1="400" y1="370" x2="400" y2="400" stroke="#0e0e0e" stroke-width="1" opacity="0.3"/>
+
+  <!-- Hood drape below -->
+  <path d="M280 500 Q340 530 400 540 Q460 530 520 500 Q530 580 540 700 L260 700 Q270 580 280 500Z" fill="#0c0c0c"/>
+  <path d="M350 540 Q345 600 340 680" stroke="#141414" stroke-width="1" fill="none" opacity="0.3"/>
+  <path d="M450 540 Q455 600 460 680" stroke="#141414" stroke-width="1" fill="none" opacity="0.3"/>
+
+  <!-- Brain symbol subtle -->
+  <path d="M385 590 Q400 578 415 590 Q420 600 415 612 Q400 618 385 612 Q380 600 385 590Z" stroke="#a855f7" stroke-width="1" fill="none" opacity="0.25">
+    <animate attributeName="opacity" values="0.15;0.35;0.15" dur="4s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Atmospheric particles -->
+  <circle cx="300" cy="300" r="1" fill="#22d3ee" opacity="0.2">
+    <animate attributeName="opacity" values="0.2;0;0.2" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="520" cy="250" r="1.5" fill="#a855f7" opacity="0.15">
+    <animate attributeName="opacity" values="0.15;0;0.15" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="250" cy="450" r="1" fill="#22d3ee" opacity="0.15">
+    <animate attributeName="opacity" values="0.15;0.05;0.15" dur="6s" repeatCount="indefinite"/>
+  </circle>
+</svg>

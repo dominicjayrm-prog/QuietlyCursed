@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" fill="none">
+  <defs>
+    <radialGradient id="bg1" cx="50%" cy="45%" r="70%">
+      <stop offset="0%" stop-color="#0a1a1a"/>
+      <stop offset="60%" stop-color="#060e0e"/>
+      <stop offset="100%" stop-color="#030808"/>
+    </radialGradient>
+    <radialGradient id="eyeGlow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="1"/>
+      <stop offset="40%" stop-color="#22d3ee" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="eyeGlow1r" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="1"/>
+      <stop offset="40%" stop-color="#22d3ee" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="mist1" cx="50%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow1" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+    <linearGradient id="ground1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#111" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#bg1)"/>
+
+  <!-- Distant structures -->
+  <rect x="50" y="200" width="40" height="400" fill="#0a0f0f" opacity="0.4"/>
+  <rect x="100" y="260" width="30" height="340" fill="#0b1010" opacity="0.3"/>
+  <rect x="680" y="220" width="50" height="380" fill="#0a0f0f" opacity="0.35"/>
+  <rect x="740" y="280" width="35" height="320" fill="#0b1010" opacity="0.25"/>
+  <rect x="200" y="300" width="20" height="200" fill="#0c1111" opacity="0.2"/>
+  <rect x="560" y="280" width="25" height="250" fill="#0c1111" opacity="0.2"/>
+
+  <!-- Ground/ledge -->
+  <rect x="0" y="750" width="800" height="250" fill="url(#ground1)"/>
+  <path d="M0 760 Q200 740 400 755 Q600 770 800 750 L800 1000 L0 1000Z" fill="#0d0d0d"/>
+  <path d="M200 760 Q300 752 400 758 Q500 764 600 755" stroke="#1a2020" stroke-width="1" fill="none" opacity="0.4"/>
+
+  <!-- Atmospheric mist -->
+  <ellipse cx="400" cy="700" rx="350" ry="120" fill="url(#mist1)"/>
+  <ellipse cx="300" cy="740" rx="200" ry="60" fill="#22d3ee" opacity="0.02"/>
+  <ellipse cx="500" cy="720" rx="180" ry="50" fill="#a855f7" opacity="0.015"/>
+
+  <!-- Figure body - cloak -->
+  <path d="M400 320 Q340 380 310 500 Q290 600 280 700 Q270 750 260 780 L540 780 Q530 750 520 700 Q510 600 490 500 Q460 380 400 320Z" fill="#0e0e0e"/>
+  <path d="M400 320 Q340 380 310 500 Q290 600 280 700 Q270 750 260 780" stroke="#1a1a1a" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M400 320 Q460 380 490 500 Q510 600 520 700 Q530 750 540 780" stroke="#1a1a1a" stroke-width="1" fill="none" opacity="0.5"/>
+
+  <!-- Cloak folds -->
+  <path d="M360 450 Q355 550 340 650 Q330 700 320 750" stroke="#161616" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M440 450 Q445 550 460 650 Q470 700 480 750" stroke="#161616" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M380 500 Q375 580 365 680" stroke="#141414" stroke-width="0.5" fill="none" opacity="0.4"/>
+  <path d="M420 500 Q425 580 435 680" stroke="#141414" stroke-width="0.5" fill="none" opacity="0.4"/>
+
+  <!-- Hood -->
+  <path d="M340 370 Q340 310 370 280 Q400 260 430 280 Q460 310 460 370 Q450 390 400 400 Q350 390 340 370Z" fill="#0c0c0c"/>
+  <path d="M340 370 Q340 310 370 280 Q400 260 430 280 Q460 310 460 370" stroke="#1c1c1c" stroke-width="1.5" fill="none" opacity="0.6"/>
+
+  <!-- Hood inner shadow -->
+  <path d="M355 365 Q355 320 380 295 Q400 280 420 295 Q445 320 445 365 Q435 380 400 385 Q365 380 355 365Z" fill="#080808"/>
+
+  <!-- Eye glow effects -->
+  <ellipse cx="380" cy="345" rx="25" ry="20" fill="#22d3ee" opacity="0.05" filter="url(#softGlow)"/>
+  <ellipse cx="420" cy="345" rx="25" ry="20" fill="#22d3ee" opacity="0.05" filter="url(#softGlow)"/>
+
+  <!-- Eyes -->
+  <ellipse cx="383" cy="345" rx="7" ry="5" fill="url(#eyeGlow1)" filter="url(#glow1)">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="417" cy="345" rx="7" ry="5" fill="url(#eyeGlow1r)" filter="url(#glow1)">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- Eye cores -->
+  <ellipse cx="383" cy="345" rx="3" ry="2.5" fill="#ffffff" opacity="0.9"/>
+  <ellipse cx="417" cy="345" rx="3" ry="2.5" fill="#ffffff" opacity="0.9"/>
+
+  <!-- Brain symbol on chest -->
+  <path d="M385 440 Q400 425 415 440 Q422 455 415 470 Q400 478 385 470 Q378 455 385 440Z" stroke="#a855f7" stroke-width="1" fill="none" opacity="0.3">
+    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="4s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Particles -->
+  <circle cx="320" cy="600" r="1" fill="#22d3ee" opacity="0.3">
+    <animate attributeName="cy" values="600;580;600" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.1;0.3" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="480" cy="550" r="1.5" fill="#a855f7" opacity="0.2">
+    <animate attributeName="cy" values="550;530;550" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="250" cy="680" r="1" fill="#22d3ee" opacity="0.2">
+    <animate attributeName="cy" values="680;660;680" dur="7s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="550" cy="650" r="1" fill="#22d3ee" opacity="0.25">
+    <animate attributeName="cy" values="650;635;650" dur="5.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>

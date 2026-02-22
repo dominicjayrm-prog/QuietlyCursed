@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" fill="none">
+  <defs>
+    <radialGradient id="bg3" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0a0e10"/>
+      <stop offset="100%" stop-color="#030506"/>
+    </radialGradient>
+    <radialGradient id="corGlow" cx="50%" cy="30%" r="40%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow3" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="fogBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="25"/>
+    </filter>
+    <linearGradient id="wall3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f1214"/>
+      <stop offset="50%" stop-color="#0a0d0f"/>
+      <stop offset="100%" stop-color="#0f1214"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#bg3)"/>
+
+  <!-- Corridor walls -->
+  <path d="M0 0 L200 100 L200 900 L0 1000Z" fill="#0c0f11"/>
+  <path d="M800 0 L600 100 L600 900 L800 1000Z" fill="#0c0f11"/>
+
+  <!-- Wall details -->
+  <line x1="80" y1="50" x2="200" y2="120" stroke="#141818" stroke-width="1" opacity="0.3"/>
+  <line x1="80" y1="200" x2="200" y2="250" stroke="#141818" stroke-width="1" opacity="0.3"/>
+  <line x1="80" y1="350" x2="200" y2="380" stroke="#141818" stroke-width="1" opacity="0.3"/>
+  <line x1="720" y1="50" x2="600" y2="120" stroke="#141818" stroke-width="1" opacity="0.3"/>
+  <line x1="720" y1="200" x2="600" y2="250" stroke="#141818" stroke-width="1" opacity="0.3"/>
+  <line x1="720" y1="350" x2="600" y2="380" stroke="#141818" stroke-width="1" opacity="0.3"/>
+
+  <!-- Floor -->
+  <path d="M200 700 Q400 750 600 700 L800 1000 L0 1000Z" fill="#080a0b"/>
+  <path d="M250 720 L350 980" stroke="#0f1214" stroke-width="1" opacity="0.3"/>
+  <path d="M400 730 L400 1000" stroke="#0f1214" stroke-width="1" opacity="0.3"/>
+  <path d="M550 720 L450 980" stroke="#0f1214" stroke-width="1" opacity="0.3"/>
+
+  <!-- Debris/rubble -->
+  <rect x="240" y="740" width="20" height="10" rx="2" fill="#111416" transform="rotate(-15 250 745)"/>
+  <rect x="520" y="750" width="15" height="8" rx="2" fill="#101315" transform="rotate(20 527 754)"/>
+  <rect x="350" y="760" width="12" height="6" rx="1" fill="#0e1113" transform="rotate(-8 356 763)"/>
+  <rect x="460" y="755" width="18" height="7" rx="2" fill="#111416" transform="rotate(10 469 758)"/>
+
+  <!-- Fog layer -->
+  <ellipse cx="400" cy="700" rx="300" ry="100" fill="#22d3ee" opacity="0.03" filter="url(#fogBlur)"/>
+  <ellipse cx="350" cy="750" rx="200" ry="80" fill="#a855f7" opacity="0.015" filter="url(#fogBlur)"/>
+
+  <!-- Central glow from figure -->
+  <ellipse cx="400" cy="400" rx="150" ry="200" fill="url(#corGlow)"/>
+
+  <!-- Figure - full body in corridor -->
+  <path d="M400 250 Q350 310 330 430 Q315 530 300 650 Q290 700 285 740 L515 740 Q510 700 500 650 Q485 530 470 430 Q450 310 400 250Z" fill="#0b0b0b"/>
+
+  <!-- Cloak edges -->
+  <path d="M400 250 Q350 310 330 430 Q315 530 300 650 Q290 700 285 740" stroke="#181b1d" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M400 250 Q450 310 470 430 Q485 530 500 650 Q510 700 515 740" stroke="#181b1d" stroke-width="1.5" fill="none" opacity="0.4"/>
+
+  <!-- Cloak folds -->
+  <path d="M370 380 Q365 480 350 600 Q340 660 330 720" stroke="#131516" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M430 380 Q435 480 450 600 Q460 660 470 720" stroke="#131516" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M395 420 Q390 520 380 650" stroke="#111314" stroke-width="0.5" fill="none" opacity="0.3"/>
+
+  <!-- Hood -->
+  <path d="M355 310 Q355 265 380 240 Q400 225 420 240 Q445 265 445 310 Q435 325 400 335 Q365 325 355 310Z" fill="#080808"/>
+  <path d="M355 310 Q355 265 380 240 Q400 225 420 240 Q445 265 445 310" stroke="#1a1d1f" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+  <!-- Eyes -->
+  <ellipse cx="385" cy="295" rx="6" ry="4" fill="#22d3ee" opacity="0.85" filter="url(#glow3)">
+    <animate attributeName="opacity" values="0.65;0.95;0.65" dur="3.5s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="415" cy="295" rx="6" ry="4" fill="#22d3ee" opacity="0.85" filter="url(#glow3)">
+    <animate attributeName="opacity" values="0.65;0.95;0.65" dur="3.5s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="385" cy="295" rx="2.5" ry="2" fill="#fff" opacity="0.9"/>
+  <ellipse cx="415" cy="295" rx="2.5" ry="2" fill="#fff" opacity="0.9"/>
+
+  <!-- Eye light cast on corridor floor -->
+  <ellipse cx="400" cy="730" rx="60" ry="15" fill="#22d3ee" opacity="0.02" filter="url(#fogBlur)"/>
+
+  <!-- Floating particles -->
+  <circle cx="280" cy="400" r="1.5" fill="#22d3ee" opacity="0.2">
+    <animate attributeName="cy" values="400;370;400" dur="8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="520" cy="350" r="1" fill="#a855f7" opacity="0.15">
+    <animate attributeName="cy" values="350;330;350" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="350" cy="500" r="1" fill="#22d3ee" opacity="0.15">
+    <animate attributeName="cy" values="500;480;500" dur="7s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="450" cy="600" r="1.5" fill="#22d3ee" opacity="0.18">
+    <animate attributeName="cy" values="600;585;600" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="240" cy="550" r="1" fill="#a855f7" opacity="0.1">
+    <animate attributeName="cy" values="550;535;550" dur="9s" repeatCount="indefinite"/>
+  </circle>
+</svg>
