@@ -3,15 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabase/client";
+import AtlasManager from "./AtlasManager";
 import GalleryManager from "./GalleryManager";
 import QuizAnalytics from "./QuizAnalytics";
 import TrafficAnalytics from "./TrafficAnalytics";
 
-const TABS = ["Gallery", "Quiz Analytics", "Traffic & UTM"] as const;
+const TABS = ["Atlas", "Gallery", "Quiz Analytics", "Traffic & UTM"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function AdminDashboard({ userEmail }: { userEmail: string }) {
-  const [activeTab, setActiveTab] = useState<Tab>("Gallery");
+  const [activeTab, setActiveTab] = useState<Tab>("Atlas");
   const router = useRouter();
 
   async function handleSignOut() {
@@ -55,6 +56,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* Tab content */}
+      {activeTab === "Atlas" && <AtlasManager />}
       {activeTab === "Gallery" && <GalleryManager />}
       {activeTab === "Quiz Analytics" && <QuizAnalytics />}
       {activeTab === "Traffic & UTM" && <TrafficAnalytics />}

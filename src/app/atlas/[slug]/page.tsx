@@ -1,51 +1,56 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { traps, getTrapBySlug, getRelatedTraps } from "@/data/traps";
-import { buildMetadata, buildTrapJsonLd } from "@/lib/seo";
+import {
+  getPublishedPostBySlug,
+  getAllPublishedSlugs,
+  getRelatedPosts,
+} from "@/lib/atlas";
+import { buildMetadata, buildAtlasPostJsonLd } from "@/lib/seo";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
-import TrapCard from "@/components/TrapCard";
+import MarkdownContent from "@/components/MarkdownContent";
 import BrainIcon from "@/components/BrainIcon";
+import EyeGlow from "@/components/EyeGlow";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export function generateStaticParams() {
-  return traps.map((t) => ({ slug: t.slug }));
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const slugs = await getAllPublishedSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const trap = getTrapBySlug(slug);
-  if (!trap) return buildMetadata();
+  const post = await getPublishedPostBySlug(slug);
+  if (!post) return buildMetadata();
+
   return buildMetadata({
-    title: trap.title,
-    description: trap.tagline,
-    path: `/atlas/${trap.slug}`,
+    title: post.meta_title || post.title,
+    description:
+      post.meta_description || post.subtitle || post.featured_description || "",
+    path: `/atlas/${post.slug}`,
     type: "article",
   });
 }
 
-const SECTION_LABELS = [
-  { key: "whatItIs" as const, title: "What It Is", icon: "eye" },
-  { key: "howItShowsUp" as const, title: "How It Shows Up", icon: "signal" },
-  { key: "hiddenCost" as const, title: "The Hidden Cost", icon: "warning" },
-  { key: "whatItProtects" as const, title: "What It Protects", icon: "shield" },
-];
-
-export default async function TrapPage({ params }: PageProps) {
+export default async function AtlasPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const trap = getTrapBySlug(slug);
-  if (!trap) notFound();
+  const post = await getPublishedPostBySlug(slug);
+  if (!post) notFound();
 
-  const related = getRelatedTraps(trap);
+  const related = await getRelatedPosts(post.related_posts ?? []);
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: buildTrapJsonLd(trap) }}
+        dangerouslySetInnerHTML={{ __html: buildAtlasPostJsonLd(post) }}
       />
 
       <article className="mx-auto max-w-3xl px-6 py-16 md:py-24">
@@ -55,11 +60,14 @@ export default async function TrapPage({ params }: PageProps) {
             Home
           </Link>
           <span>/</span>
-          <Link href="/atlas" className="hover:text-cyan-400 transition-colors">
+          <Link
+            href="/atlas"
+            className="hover:text-cyan-400 transition-colors"
+          >
             Atlas
           </Link>
           <span>/</span>
-          <span className="text-white/50">{trap.title}</span>
+          <span className="text-white/50">{post.title}</span>
         </nav>
 
         {/* Title block */}
@@ -67,85 +75,93 @@ export default async function TrapPage({ params }: PageProps) {
           <div className="mb-4 flex items-center gap-3">
             <BrainIcon className="w-5 h-5 text-purple-400" />
             <time
-              dateTime={trap.publishedAt}
+              dateTime={post.created_at}
               className="text-xs text-white/30 tracking-wider uppercase"
             >
-              {new Date(trap.publishedAt).toLocaleDateString("en-US", {
+              {new Date(post.created_at).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
                 year: "numeric",
               })}
             </time>
           </div>
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-white md:text-5xl">
-            {trap.title}
+          <h1 className="mb-3 text-3xl font-bold tracking-tight text-white md:text-5xl">
+            {post.title}
           </h1>
-          <p className="mb-1 text-sm text-white/25 tracking-widest uppercase">
-            {trap.subtitle}
-          </p>
-          <p className="text-lg text-cyan-400/70 italic">{trap.tagline}</p>
+          {post.subtitle && (
+            <p className="text-lg text-cyan-400/70 italic">{post.subtitle}</p>
+          )}
         </header>
 
         {/* Video */}
-        <div className="mb-14">
-          <YouTubeEmbed videoId={trap.youtubeId} title={trap.title} />
-        </div>
+        {post.youtube_video_id && (
+          <div className="mb-14">
+            <YouTubeEmbed videoId={post.youtube_video_id} title={post.title} />
+          </div>
+        )}
 
-        {/* SEO Summary */}
-        <div className="mb-16 space-y-6">
-          {trap.summary.split("\n\n").map((paragraph, i) => (
-            <p
-              key={i}
-              className="text-base leading-[1.8] text-white/60 md:text-lg"
-            >
-              {paragraph}
-            </p>
-          ))}
-        </div>
+        {/* Article Content */}
+        {post.content && (
+          <div className="mb-16">
+            <MarkdownContent content={post.content} />
+          </div>
+        )}
 
-        {/* Structured Sections */}
-        <div className="mb-16 space-y-10">
-          {SECTION_LABELS.map(({ key, title }) => (
-            <section
-              key={key}
-              className="trap-section rounded-2xl border border-white/5 bg-white/[0.02] p-6 md:p-8"
-            >
-              <h2 className="mb-4 flex items-center gap-3 text-lg font-semibold text-cyan-400 md:text-xl">
-                <span className="inline-block h-px w-6 bg-cyan-500/40" aria-hidden />
-                {title}
-              </h2>
-              <p className="text-base leading-[1.8] text-white/55">
-                {trap.sections[key]}
-              </p>
-            </section>
-          ))}
-        </div>
-
-        {/* Related Traps */}
+        {/* Related Posts */}
         {related.length > 0 && (
           <section className="border-t border-white/5 pt-12">
             <h2 className="mb-2 text-xl font-semibold text-white/70">
-              Related Traps
+              Related Case Files
             </h2>
             <p className="mb-6 text-sm text-white/30">
-              Other patterns that connect to this trap.
+              Other patterns that connect to this topic.
             </p>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2">
               {related.map((r) => (
-                <TrapCard key={r.slug} trap={r} />
+                <Link
+                  key={r.id}
+                  href={`/atlas/${r.slug}`}
+                  className="group block rounded-2xl border border-white/5 bg-white/[0.02] p-5 transition-all hover:border-cyan-500/20 hover:bg-white/[0.04]"
+                >
+                  <h3 className="mb-1 text-sm font-semibold text-white/80 transition-colors group-hover:text-cyan-400">
+                    {r.title}
+                  </h3>
+                  <p className="text-xs text-white/40">
+                    {r.featured_description || r.subtitle || ""}
+                  </p>
+                </Link>
               ))}
             </div>
           </section>
         )}
 
-        {/* Back to Atlas CTA */}
-        <div className="mt-16 text-center">
+        {/* Trait Index CTA */}
+        <section className="mt-16 rounded-2xl border border-purple-500/10 bg-purple-500/[0.03] p-8 text-center">
+          <EyeGlow size="sm" className="mx-auto mb-4 w-8 h-4 opacity-40" />
+          <h2 className="mb-2 text-lg font-semibold text-white/70">
+            The Trait Index
+          </h2>
+          <p className="mx-auto mb-6 max-w-md text-sm text-white/40">
+            Discover which psychological pattern runs deepest in you. 12
+            questions. 6 archetypes.
+          </p>
+          <Link
+            href="/trait-index"
+            className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-6 py-3 text-sm font-semibold tracking-wider uppercase text-purple-400 transition-all hover:bg-purple-500/20 hover:border-purple-400/50"
+          >
+            <BrainIcon className="w-4 h-4 text-cyan-400" />
+            Take the Trait Index
+          </Link>
+        </section>
+
+        {/* Back to Atlas */}
+        <div className="mt-12 text-center">
           <Link
             href="/atlas"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-6 py-3 text-sm font-medium tracking-wider uppercase text-white/50 transition-all hover:border-cyan-500/30 hover:text-cyan-400"
           >
             <BrainIcon className="w-4 h-4 text-purple-400/70" />
-            Browse all traps
+            Browse all case files
           </Link>
         </div>
       </article>

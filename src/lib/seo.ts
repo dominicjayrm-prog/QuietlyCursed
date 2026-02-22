@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { Trap } from "@/data/traps";
+import type { AtlasPost } from "@/lib/atlas";
 
 const SITE_URL = "https://quietlycursed.com";
 const SITE_NAME = "Quietly Cursed";
@@ -79,6 +80,50 @@ export function buildTrapJsonLd(trap: Trap): string {
       embedUrl: `https://www.youtube.com/embed/${trap.youtubeId}`,
     },
   });
+}
+
+export function buildAtlasPostJsonLd(post: AtlasPost): string {
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.meta_title || post.title,
+    description: post.meta_description || post.subtitle || post.featured_description || "",
+    datePublished: post.created_at,
+    dateModified: post.updated_at,
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${SITE_URL}/atlas/${post.slug}`,
+    },
+    articleSection: "Psychology",
+    keywords: [
+      "psychology",
+      "cognitive bias",
+      post.title,
+      "mental model",
+      "quietly cursed",
+    ],
+  };
+
+  if (post.youtube_video_id) {
+    jsonLd.video = {
+      "@type": "VideoObject",
+      name: post.title,
+      description: post.subtitle || post.title,
+      embedUrl: `https://www.youtube.com/embed/${post.youtube_video_id}`,
+    };
+  }
+
+  return JSON.stringify(jsonLd);
 }
 
 export function buildWebsiteJsonLd(): string {
