@@ -142,6 +142,106 @@ export async function POST(request: Request) {
     await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_url text`;
     await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_alt text`;
 
+    // ── Migration 005: Sessions, visitor tracking & UTM links ──
+
+    // Add session + geo columns to page_views
+    await sql`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS session_id text`;
+    await sql`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS country text`;
+    await sql`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS city text`;
+    await sql`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS device_type text`;
+    await sql`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS browser text`;
+
+    // Sessions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id text PRIMARY KEY,
+        started_at timestamptz DEFAULT now(),
+        last_seen_at timestamptz DEFAULT now(),
+        duration_seconds integer DEFAULT 0,
+        utm_source text,
+        utm_medium text,
+        utm_campaign text,
+        utm_content text,
+        utm_term text,
+        landing_page text,
+        referrer text,
+        country text,
+        city text,
+        device_type text,
+        browser text,
+        page_count integer DEFAULT 1,
+        cookie_consent boolean DEFAULT false
+      )
+    `;
+    await sql`ALTER TABLE sessions ENABLE ROW LEVEL SECURITY`;
+
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Anyone can insert sessions"
+          ON sessions FOR INSERT WITH CHECK (true);
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Anyone can update sessions"
+          ON sessions FOR UPDATE USING (true);
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Authenticated can read sessions"
+          ON sessions FOR SELECT USING (auth.role() = 'authenticated');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+
+    // UTM links table
+    await sql`
+      CREATE TABLE IF NOT EXISTS utm_links (
+        id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+        label text NOT NULL,
+        video_url text,
+        destination_path text NOT NULL DEFAULT '/',
+        utm_source text NOT NULL DEFAULT 'youtube',
+        utm_medium text NOT NULL DEFAULT 'video',
+        utm_campaign text NOT NULL,
+        utm_content text,
+        utm_term text,
+        full_url text NOT NULL,
+        click_count integer DEFAULT 0,
+        created_at timestamptz DEFAULT now()
+      )
+    `;
+    await sql`ALTER TABLE utm_links ENABLE ROW LEVEL SECURITY`;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Authenticated full access utm_links"
+          ON utm_links FOR ALL USING (auth.role() = 'authenticated');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+
+    // RPC function for incrementing page count
+    await sql`
+      CREATE OR REPLACE FUNCTION increment_page_count(sid text)
+      RETURNS void AS $$
+      BEGIN
+        UPDATE sessions
+        SET page_count = page_count + 1,
+            last_seen_at = now()
+        WHERE id = sid;
+      END;
+      $$ LANGUAGE plpgsql SECURITY DEFINER
+    `;
+
+    // Indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_page_views_session ON page_views (session_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_sessions_campaign ON sessions (utm_campaign)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_sessions_source ON sessions (utm_source)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_page_views_created ON page_views (created_at DESC)`;
+
     await sql.end();
 
     return NextResponse.json({
