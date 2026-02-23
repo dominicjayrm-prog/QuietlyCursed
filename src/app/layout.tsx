@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GrainOverlay from "@/components/GrainOverlay";
 import UtmCapture from "@/components/UtmCapture";
+import CookieConsent from "@/components/CookieConsent";
 import { buildMetadata, buildWebsiteJsonLd } from "@/lib/seo";
 import "./globals.css";
 
@@ -28,6 +29,7 @@ export default function RootLayout({
         <Header />
         <main className="pt-[72px]">{children}</main>
         <Footer />
+        <CookieConsent />
       </body>
     </html>
   );

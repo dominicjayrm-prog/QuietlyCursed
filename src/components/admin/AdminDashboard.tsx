@@ -7,8 +7,15 @@ import AtlasManager from "./AtlasManager";
 import GalleryManager from "./GalleryManager";
 import QuizAnalytics from "./QuizAnalytics";
 import TrafficAnalytics from "./TrafficAnalytics";
+import LinkGenerator from "./LinkGenerator";
 
-const TABS = ["Atlas", "Gallery", "Quiz Analytics", "Traffic & UTM"] as const;
+const TABS = [
+  "Atlas",
+  "Gallery",
+  "Quiz Analytics",
+  "Traffic & UTM",
+  "Link Generator",
+] as const;
 type Tab = (typeof TABS)[number];
 
 export default function AdminDashboard({ userEmail }: { userEmail: string }) {
@@ -39,12 +46,12 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* Tabs */}
-      <div className="mb-8 flex gap-1 rounded-lg border border-white/5 bg-white/[0.02] p-1">
+      <div className="mb-8 flex gap-1 overflow-x-auto rounded-lg border border-white/5 bg-white/[0.02] p-1">
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
+            className={`flex-1 whitespace-nowrap rounded-md px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
               activeTab === tab
                 ? "bg-cyan-500/10 text-cyan-400"
                 : "text-white/40 hover:text-white/60"
@@ -60,6 +67,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
       {activeTab === "Gallery" && <GalleryManager />}
       {activeTab === "Quiz Analytics" && <QuizAnalytics />}
       {activeTab === "Traffic & UTM" && <TrafficAnalytics />}
+      {activeTab === "Link Generator" && <LinkGenerator />}
     </section>
   );
 }
