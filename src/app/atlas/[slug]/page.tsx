@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -77,11 +78,14 @@ export default async function AtlasPostPage({ params }: PageProps) {
         {/* Banner Image */}
         {post.banner_url && (
           <div className="mb-10 overflow-hidden rounded-2xl border border-white/5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={post.banner_url}
               alt={post.banner_alt || post.title}
+              width={768}
+              height={400}
               className="w-full object-cover"
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
             />
           </div>
         )}

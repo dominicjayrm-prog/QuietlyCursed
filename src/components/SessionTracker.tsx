@@ -38,12 +38,12 @@ export default function SessionTracker() {
     document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("beforeunload", onBeforeUnload);
 
-    // Periodic heartbeat every 30s to capture long sessions
+    // Periodic heartbeat every 240s to capture long sessions
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
         sendSessionHeartbeat();
       }
-    }, 30000);
+    }, 240_000);
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);

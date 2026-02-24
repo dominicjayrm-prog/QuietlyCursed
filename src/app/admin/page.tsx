@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getSupabase } from "@/lib/supabase/client";
 import { supabaseEnabled } from "@/lib/supabase/enabled";
 import AdminDashboard from "@/components/admin/AdminDashboard";
+import SessionTracker from "@/components/SessionTracker";
 
 export default function AdminPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -74,5 +75,10 @@ export default function AdminPage() {
 
   if (!userEmail) return null;
 
-  return <AdminDashboard userEmail={userEmail} />;
+  return (
+    <>
+      <SessionTracker />
+      <AdminDashboard userEmail={userEmail} />
+    </>
+  );
 }

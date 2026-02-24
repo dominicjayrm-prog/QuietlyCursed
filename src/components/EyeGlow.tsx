@@ -1,5 +1,3 @@
-"use client";
-
 interface EyeGlowProps {
   size?: "sm" | "md" | "lg";
   className?: string;
