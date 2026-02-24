@@ -17,19 +17,44 @@ interface PageView {
   created_at: string;
 }
 
+interface SessionRow {
+  session_id: string;
+  started_at: string;
+  last_seen_at: string;
+  duration_seconds: number;
+  entry_page: string | null;
+  country: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
+}
+
 export default function TrafficAnalytics() {
   const [views, setViews] = useState<PageView[]>([]);
+  const [sessionRows, setSessionRows] = useState<SessionRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       const supabase = getSupabase()!;
-      const { data } = await supabase
-        .from("page_views")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(2000);
-      setViews(data ?? []);
+
+      const [viewsRes, sessionsRes] = await Promise.all([
+        supabase
+          .from("page_views")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(2000),
+        supabase
+          .from("sessions")
+          .select("*")
+          .order("started_at", { ascending: false })
+          .limit(2000),
+      ]);
+
+      setViews(viewsRes.data ?? []);
+      setSessionRows(sessionsRes.data ?? []);
       setLoading(false);
     }
     load();
@@ -110,17 +135,24 @@ export default function TrafficAnalytics() {
     .slice(-30);
   const maxDay = Math.max(...sortedDays.map(([, c]) => c), 1);
 
-  // ─── Sessions ───────────────────────────────────────────
+  // ─── Sessions (from sessions table) ───────────────────
 
-  const sessions: Record<string, PageView[]> = {};
+  // Build a lookup of session_id → duration from the sessions table
+  const sessionDurationMap: Record<string, number> = {};
+  for (const s of sessionRows) {
+    sessionDurationMap[s.session_id] = s.duration_seconds;
+  }
+
+  // Group page views by session
+  const pvSessions: Record<string, PageView[]> = {};
   for (const v of views) {
     if (v.session_id) {
-      if (!sessions[v.session_id]) sessions[v.session_id] = [];
-      sessions[v.session_id].push(v);
+      if (!pvSessions[v.session_id]) pvSessions[v.session_id] = [];
+      pvSessions[v.session_id].push(v);
     }
   }
-  const sessionList = Object.values(sessions);
-  const uniqueSessionCount = sessionList.length;
+  const sessionList = Object.values(pvSessions);
+  const uniqueSessionCount = Math.max(sessionList.length, sessionRows.length);
 
   const avgPagesPerSession =
     sessionList.length > 0
@@ -130,38 +162,46 @@ export default function TrafficAnalytics() {
         ).toFixed(1)
       : "0";
 
-  // Avg session duration (from first → last page view per session)
-  const durations = sessionList
-    .map((s) => {
-      if (s.length < 2) return 0;
-      const sorted = [...s].sort(
-        (a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      );
-      return (
-        new Date(sorted[sorted.length - 1].created_at).getTime() -
-        new Date(sorted[0].created_at).getTime()
-      );
-    })
+  // Avg session duration — prefer real heartbeat data, fall back to page view timestamps
+  const realDurations = sessionRows
+    .map((s) => s.duration_seconds)
     .filter((d) => d > 0);
 
-  const avgDurationSec =
-    durations.length > 0
-      ? Math.round(
-          durations.reduce((a, b) => a + b, 0) / durations.length / 1000
-        )
-      : 0;
+  let avgDurationSec = 0;
+  if (realDurations.length > 0) {
+    avgDurationSec = Math.round(
+      realDurations.reduce((a, b) => a + b, 0) / realDurations.length
+    );
+  } else {
+    // Fallback: derive from page view timestamps
+    const fallbackDurations = sessionList
+      .map((s) => {
+        if (s.length < 2) return 0;
+        const sorted = [...s].sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() -
+            new Date(b.created_at).getTime()
+        );
+        return (
+          new Date(sorted[sorted.length - 1].created_at).getTime() -
+          new Date(sorted[0].created_at).getTime()
+        );
+      })
+      .filter((d) => d > 0);
 
-  function formatDuration(seconds: number) {
-    if (seconds < 60) return `${seconds}s`;
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}m ${s}s`;
+    if (fallbackDurations.length > 0) {
+      avgDurationSec = Math.round(
+        fallbackDurations.reduce((a, b) => a + b, 0) /
+          fallbackDurations.length /
+          1000
+      );
+    }
   }
 
   // ─── Countries ──────────────────────────────────────────
 
   const countryCounts: Record<string, number> = {};
+  // Merge countries from both page_views and sessions
   for (const v of views) {
     if (v.country) {
       countryCounts[v.country] = (countryCounts[v.country] || 0) + 1;
@@ -175,12 +215,17 @@ export default function TrafficAnalytics() {
   // ─── YouTube Video Performance ──────────────────────────
 
   const ytViews = views.filter((v) => v.utm_source === "youtube");
+  const ytSessions = sessionRows.filter((s) => s.utm_source === "youtube");
+
   interface VideoStats {
     campaign: string;
     videoId: string | null;
     views: number;
     sessions: Set<string>;
     topPage: string;
+    totalDuration: number;
+    durationCount: number;
+    countries: Set<string>;
   }
   const videoMap: Record<string, VideoStats> = {};
   for (const v of ytViews) {
@@ -192,18 +237,70 @@ export default function TrafficAnalytics() {
         views: 0,
         sessions: new Set(),
         topPage: v.path,
+        totalDuration: 0,
+        durationCount: 0,
+        countries: new Set(),
       };
     }
     videoMap[key].views++;
-    if (v.session_id) videoMap[key].sessions.add(v.session_id);
+    if (v.session_id) {
+      videoMap[key].sessions.add(v.session_id);
+      // Add duration from sessions table
+      const dur = sessionDurationMap[v.session_id];
+      if (dur && dur > 0 && !videoMap[key].sessions.has(`_d_${v.session_id}`)) {
+        videoMap[key].totalDuration += dur;
+        videoMap[key].durationCount++;
+        // Mark as counted to avoid double-counting
+        videoMap[key].sessions.add(`_d_${v.session_id}`);
+      }
+    }
+    if (v.country) videoMap[key].countries.add(v.country);
     if (!videoMap[key].videoId && v.utm_content)
       videoMap[key].videoId = v.utm_content;
   }
+  // Also pull duration from sessions table for YouTube sessions
+  for (const s of ytSessions) {
+    const key = s.utm_campaign || "(no-campaign)";
+    if (!videoMap[key]) {
+      videoMap[key] = {
+        campaign: key,
+        videoId: s.utm_content,
+        views: 0,
+        sessions: new Set(),
+        topPage: s.entry_page || "/",
+        totalDuration: 0,
+        durationCount: 0,
+        countries: new Set(),
+      };
+    }
+    if (
+      s.duration_seconds > 0 &&
+      !videoMap[key].sessions.has(`_d_${s.session_id}`)
+    ) {
+      videoMap[key].totalDuration += s.duration_seconds;
+      videoMap[key].durationCount++;
+      videoMap[key].sessions.add(`_d_${s.session_id}`);
+    }
+    if (s.country) videoMap[key].countries.add(s.country);
+  }
+
   const sortedVideos = Object.values(videoMap).sort(
     (a, b) => b.views - a.views
   );
 
   const utmViews = views.filter((v) => v.utm_source);
+
+  // YouTube average session duration
+  const ytSessionDurations = ytSessions
+    .map((s) => s.duration_seconds)
+    .filter((d) => d > 0);
+  const ytAvgDuration =
+    ytSessionDurations.length > 0
+      ? Math.round(
+          ytSessionDurations.reduce((a, b) => a + b, 0) /
+            ytSessionDurations.length
+        )
+      : 0;
 
   // ─── Render ─────────────────────────────────────────────
 
@@ -221,7 +318,7 @@ export default function TrafficAnalytics() {
 
       {/* Session stats row */}
       {uniqueSessionCount > 0 && (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
             <p className="mb-1 text-xs uppercase tracking-wider text-white/30">
               Avg Pages / Session
@@ -235,14 +332,24 @@ export default function TrafficAnalytics() {
               Avg Session Duration
             </p>
             <p className="text-2xl font-bold text-white">
-              {avgDurationSec > 0 ? formatDuration(avgDurationSec) : "—"}
+              {avgDurationSec > 0 ? formatDuration(avgDurationSec) : "\u2014"}
             </p>
-            {avgDurationSec === 0 && uniqueSessionCount > 0 && (
+            {realDurations.length === 0 && avgDurationSec === 0 && (
               <p className="mt-1 text-[10px] text-white/20">
-                Single-page sessions don&apos;t have duration data
+                Duration data collecting...
               </p>
             )}
           </div>
+          {ytViews.length > 0 && (
+            <div className="rounded-xl border border-purple-500/10 bg-purple-500/[0.02] p-5">
+              <p className="mb-1 text-xs uppercase tracking-wider text-purple-400/40">
+                YouTube Avg Duration
+              </p>
+              <p className="text-2xl font-bold text-purple-300">
+                {ytAvgDuration > 0 ? formatDuration(ytAvgDuration) : "\u2014"}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -259,42 +366,65 @@ export default function TrafficAnalytics() {
                   <th className="pb-3 pr-4">Video</th>
                   <th className="pb-3 pr-4 text-right">Clicks</th>
                   <th className="pb-3 pr-4 text-right">Sessions</th>
+                  <th className="pb-3 pr-4 text-right">Avg Duration</th>
                   <th className="pb-3 pr-4">Top Landing</th>
+                  <th className="pb-3 pr-4">Countries</th>
                   <th className="pb-3">YouTube Link</th>
                 </tr>
               </thead>
               <tbody>
-                {sortedVideos.slice(0, 20).map((v) => (
-                  <tr
-                    key={v.campaign}
-                    className="border-b border-white/[0.03]"
-                  >
-                    <td className="py-2.5 pr-4 text-white/60">
-                      {prettifyCampaign(v.campaign)}
-                    </td>
-                    <td className="py-2.5 pr-4 text-right font-mono text-cyan-400/70">
-                      {v.views}
-                    </td>
-                    <td className="py-2.5 pr-4 text-right font-mono text-white/40">
-                      {v.sessions.size}
-                    </td>
-                    <td className="py-2.5 pr-4 text-white/30">{v.topPage}</td>
-                    <td className="py-2.5">
-                      {v.videoId ? (
-                        <a
-                          href={`https://youtube.com/watch?v=${v.videoId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-cyan-400/50 underline decoration-cyan-400/20 hover:text-cyan-400/80"
-                        >
-                          {v.videoId}
-                        </a>
-                      ) : (
-                        <span className="text-white/20">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {sortedVideos.slice(0, 20).map((v) => {
+                  const realSessions = [...v.sessions].filter(
+                    (s) => !s.startsWith("_d_")
+                  );
+                  const avgDur =
+                    v.durationCount > 0
+                      ? Math.round(v.totalDuration / v.durationCount)
+                      : 0;
+                  return (
+                    <tr
+                      key={v.campaign}
+                      className="border-b border-white/[0.03]"
+                    >
+                      <td className="py-2.5 pr-4 text-white/60">
+                        {prettifyCampaign(v.campaign)}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right font-mono text-cyan-400/70">
+                        {v.views}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right font-mono text-white/40">
+                        {realSessions.length}
+                      </td>
+                      <td className="py-2.5 pr-4 text-right font-mono text-white/40">
+                        {avgDur > 0 ? formatDuration(avgDur) : "\u2014"}
+                      </td>
+                      <td className="py-2.5 pr-4 text-white/30">
+                        {v.topPage}
+                      </td>
+                      <td className="py-2.5 pr-4 text-white/30">
+                        {v.countries.size > 0
+                          ? [...v.countries]
+                              .map((c) => countryFlag(c))
+                              .join(" ")
+                          : "\u2014"}
+                      </td>
+                      <td className="py-2.5">
+                        {v.videoId ? (
+                          <a
+                            href={`https://youtube.com/watch?v=${v.videoId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-cyan-400/50 underline decoration-cyan-400/20 hover:text-cyan-400/80"
+                          >
+                            {v.videoId}
+                          </a>
+                        ) : (
+                          <span className="text-white/20">{"\u2014"}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -472,20 +602,20 @@ export default function TrafficAnalytics() {
                   </td>
                   <td className="py-2.5 pr-4 text-white/50">{v.path}</td>
                   <td className="py-2.5 pr-4 text-white/40">
-                    {v.utm_source || "—"}
+                    {v.utm_source || "\u2014"}
                   </td>
                   <td className="py-2.5 pr-4 text-white/40">
                     {v.utm_campaign
                       ? prettifyCampaign(v.utm_campaign)
-                      : "—"}
+                      : "\u2014"}
                   </td>
                   <td className="py-2.5 pr-4 text-white/40">
                     {v.country
                       ? `${countryFlag(v.country)} ${v.country}`
-                      : "—"}
+                      : "\u2014"}
                   </td>
                   <td className="py-2.5 font-mono text-xs text-white/20">
-                    {v.session_id ? v.session_id.slice(0, 8) : "—"}
+                    {v.session_id ? v.session_id.slice(0, 8) : "\u2014"}
                   </td>
                 </tr>
               ))}
@@ -508,6 +638,13 @@ function StatCard({ label, value }: { label: string; value: number }) {
       <p className="text-2xl font-bold text-white">{value}</p>
     </div>
   );
+}
+
+function formatDuration(seconds: number) {
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}m ${s}s`;
 }
 
 /** Turn a slug like "why-narcissists-fear-you" into "Why Narcissists Fear You" */
