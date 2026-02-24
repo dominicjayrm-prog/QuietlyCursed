@@ -177,12 +177,51 @@ export async function POST(request: Request) {
     await sql`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS session_id text`;
     await sql`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS country text`;
 
+    // ─── sessions table (duration & attribution tracking) ────
+    await sql`
+      CREATE TABLE IF NOT EXISTS sessions (
+        session_id text PRIMARY KEY,
+        started_at timestamptz DEFAULT now(),
+        last_seen_at timestamptz DEFAULT now(),
+        duration_seconds integer DEFAULT 0,
+        entry_page text,
+        country text,
+        utm_source text,
+        utm_medium text,
+        utm_campaign text,
+        utm_content text,
+        utm_term text
+      )
+    `;
+    await sql`ALTER TABLE sessions ENABLE ROW LEVEL SECURITY`;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Public can insert sessions"
+          ON sessions FOR INSERT WITH CHECK (true);
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Public can update sessions"
+          ON sessions FOR UPDATE USING (true) WITH CHECK (true);
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Authenticated can read sessions"
+          ON sessions FOR SELECT USING (auth.role() = 'authenticated');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+
     await sql.end();
 
     return NextResponse.json({
       status: "ok",
       message:
-        "Migration completed. atlas_posts and page_views tables created with RLS.",
+        "Migration completed. atlas_posts, page_views, and sessions tables created with RLS.",
     });
   } catch (e) {
     await sql.end().catch(() => {});

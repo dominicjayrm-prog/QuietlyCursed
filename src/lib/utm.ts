@@ -12,6 +12,7 @@ export type UtmData = Partial<Record<(typeof UTM_PARAMS)[number], string>>;
 
 const SESSION_KEY = "qc_utm";
 const SESSION_ID_KEY = "qc_session_id";
+const SESSION_START_KEY = "qc_session_start";
 const CONSENT_KEY = "qc_tracking_consent";
 
 export function captureUtmParams(): UtmData {
@@ -56,10 +57,60 @@ export function getSessionId(): string {
     if (!id) {
       id = crypto.randomUUID();
       sessionStorage.setItem(SESSION_ID_KEY, id);
+      sessionStorage.setItem(SESSION_START_KEY, String(Date.now()));
     }
     return id;
   } catch {
     return crypto.randomUUID();
+  }
+}
+
+/** Get the session start timestamp in ms */
+export function getSessionStart(): number {
+  if (typeof window === "undefined") return Date.now();
+  try {
+    const raw = sessionStorage.getItem(SESSION_START_KEY);
+    return raw ? Number(raw) : Date.now();
+  } catch {
+    return Date.now();
+  }
+}
+
+/** Get current session duration in seconds */
+export function getSessionDuration(): number {
+  return Math.round((Date.now() - getSessionStart()) / 1000);
+}
+
+/** Send a session heartbeat (duration update) via sendBeacon or fetch */
+export function sendSessionHeartbeat(): void {
+  if (typeof window === "undefined") return;
+  if (!hasTrackingConsent()) return;
+
+  const utm = getStoredUtm();
+  const payload = JSON.stringify({
+    session_id: getSessionId(),
+    duration_seconds: getSessionDuration(),
+    entry_page: sessionStorage.getItem("qc_entry_page") || "/",
+    utm_source: utm.utm_source || null,
+    utm_medium: utm.utm_medium || null,
+    utm_campaign: utm.utm_campaign || null,
+    utm_content: utm.utm_content || null,
+    utm_term: utm.utm_term || null,
+  });
+
+  // Prefer sendBeacon (works on tab close), fall back to fetch
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon(
+      "/api/track/heartbeat",
+      new Blob([payload], { type: "application/json" })
+    );
+  } else {
+    fetch("/api/track/heartbeat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
   }
 }
 

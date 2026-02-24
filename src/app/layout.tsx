@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GrainOverlay from "@/components/GrainOverlay";
 import UtmCapture from "@/components/UtmCapture";
+import SessionTracker from "@/components/SessionTracker";
 import CookieConsent from "@/components/CookieConsent";
 import { buildMetadata, buildWebsiteJsonLd } from "@/lib/seo";
 import "./globals.css";
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-neutral-950 text-white antialiased">
         <GrainOverlay />
         <UtmCapture />
+        <SessionTracker />
         <Header />
         <main className="pt-[72px]">{children}</main>
         <Footer />
