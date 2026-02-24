@@ -12,6 +12,10 @@ CREATE TABLE IF NOT EXISTS atlas_posts (
   youtube_video_id text,
   featured_description text,
   content text,
+  content_json jsonb,
+  content_format text DEFAULT 'markdown',
+  banner_url text,
+  banner_alt text,
   meta_title text,
   meta_description text,
   related_posts uuid[] DEFAULT '{}',
@@ -25,6 +29,11 @@ DO $$ BEGIN CREATE POLICY "Authenticated users full access" ON atlas_posts FOR A
 CREATE OR REPLACE FUNCTION update_atlas_posts_updated_at() RETURNS trigger AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS set_atlas_posts_updated_at ON atlas_posts;
 CREATE TRIGGER set_atlas_posts_updated_at BEFORE UPDATE ON atlas_posts FOR EACH ROW EXECUTE FUNCTION update_atlas_posts_updated_at();
+-- Idempotent column additions for existing tables:
+ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS content_json jsonb;
+ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS content_format text DEFAULT 'markdown';
+ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_url text;
+ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_alt text;
 `;
 
 /** GET /api/setup — check if atlas_posts table exists */
