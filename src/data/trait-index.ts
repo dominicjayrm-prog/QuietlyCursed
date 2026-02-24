@@ -14,7 +14,7 @@ export interface ArchetypeProfile {
   strengths: string;
   blindSpot: string;
   recommendedSlugs: [string, string, string];
-  youtubeId: string;
+  youtubeId?: string;
 }
 
 export interface QuizOption {
@@ -44,7 +44,6 @@ export const archetypes: Record<Archetype, ArchetypeProfile> = {
     blindSpot:
       "Analysis paralysis. You can see every angle so clearly that choosing one feels like a loss. You mistake observation for participation and awareness for control.",
     recommendedSlugs: ["confirmation-cage", "normalcy-veil", "anchoring-abyss"],
-    youtubeId: "dQw4w9WgXcQ",
   },
   prototype: {
     id: "prototype",
@@ -57,7 +56,6 @@ export const archetypes: Record<Archetype, ArchetypeProfile> = {
     blindSpot:
       "You can't rest in who you are right now. Self-improvement becomes self-rejection. The person you are today is never enough because you're always comparing them to the person you could become.",
     recommendedSlugs: ["sunk-cost-spiral", "dunning-kruger-mirror", "anchoring-abyss"],
-    youtubeId: "dQw4w9WgXcQ",
   },
   container: {
     id: "container",
@@ -70,7 +68,6 @@ export const archetypes: Record<Archetype, ArchetypeProfile> = {
     blindSpot:
       "You confuse being needed with being loved. You've built your identity around holding others together, which means you can't let go without feeling like you're abandoning them — or losing yourself.",
     recommendedSlugs: ["sunk-cost-spiral", "halo-distortion", "normalcy-veil"],
-    youtubeId: "dQw4w9WgXcQ",
   },
   climber: {
     id: "climber",
@@ -83,7 +80,6 @@ export const archetypes: Record<Archetype, ArchetypeProfile> = {
     blindSpot:
       "You can't distinguish between wanting something and needing to prove something. Your achievements are real, but the validation they provide is always temporary. The next goal isn't ambition — it's anxiety wearing a trophy.",
     recommendedSlugs: ["anchoring-abyss", "dunning-kruger-mirror", "halo-distortion"],
-    youtubeId: "dQw4w9WgXcQ",
   },
   ghost: {
     id: "ghost",
@@ -96,7 +92,6 @@ export const archetypes: Record<Archetype, ArchetypeProfile> = {
     blindSpot:
       "You mistake detachment for freedom. You avoid being hurt by avoiding being known. The safety of distance becomes a prison of disconnection, and you lose the ability to tell whether you're protecting yourself or punishing yourself.",
     recommendedSlugs: ["normalcy-veil", "confirmation-cage", "sunk-cost-spiral"],
-    youtubeId: "dQw4w9WgXcQ",
   },
   peacemaker: {
     id: "peacemaker",
@@ -109,7 +104,6 @@ export const archetypes: Record<Archetype, ArchetypeProfile> = {
     blindSpot:
       "You sacrifice your own needs so consistently that you've lost track of what they are. Peace-at-all-costs isn't peace — it's suppression. The anger you refuse to express doesn't disappear; it turns inward.",
     recommendedSlugs: ["halo-distortion", "normalcy-veil", "confirmation-cage"],
-    youtubeId: "dQw4w9WgXcQ",
   },
 };
 
@@ -294,5 +288,6 @@ export function buildShareText(
   primary: ArchetypeProfile,
   secondary: ArchetypeProfile
 ): string {
-  return `My Quietly Cursed Trait Index:\n\nPrimary: ${primary.name} — ${primary.title}\nSecondary: ${secondary.name}\n\nDiscover your archetype at quietlycursed.com/trait-index`;
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://quietlycursed.com").replace(/^https?:\/\//, "");
+  return `My Quietly Cursed Trait Index:\n\nPrimary: ${primary.name} — ${primary.title}\nSecondary: ${secondary.name}\n\nDiscover your archetype at ${siteUrl}/trait-index`;
 }

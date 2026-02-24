@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import type { Trap } from "@/data/traps";
 import type { AtlasPost } from "@/lib/atlas";
 
-const SITE_URL = "https://quietlycursed.com";
-const SITE_NAME = "Quietly Cursed";
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://quietlycursed.com";
+export const SITE_NAME = "Quietly Cursed";
 const DEFAULT_DESCRIPTION =
   "Explore the psychological traps that silently shape your decisions. A dark, minimalist atlas of the mind.";
 
@@ -26,6 +27,9 @@ export function buildMetadata(overrides?: {
     title,
     description,
     metadataBase: new URL(SITE_URL),
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
       title,
       description,
@@ -44,7 +48,7 @@ export function buildMetadata(overrides?: {
 }
 
 export function buildTrapJsonLd(trap: Trap): string {
-  return JSON.stringify({
+  const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: trap.title,
@@ -73,13 +77,18 @@ export function buildTrapJsonLd(trap: Trap): string {
       "mental model",
       "decision making",
     ],
-    video: {
+  };
+
+  if (trap.youtubeId) {
+    jsonLd.video = {
       "@type": "VideoObject",
       name: trap.title,
       description: trap.tagline,
       embedUrl: `https://www.youtube.com/embed/${trap.youtubeId}`,
-    },
-  });
+    };
+  }
+
+  return JSON.stringify(jsonLd);
 }
 
 export function buildAtlasPostJsonLd(post: AtlasPost): string {

@@ -12,7 +12,7 @@ export interface Trap {
   tagline: string;
   summary: string;
   sections: TrapSection;
-  youtubeId: string;
+  youtubeId?: string;
   publishedAt: string;
   relatedSlugs: [string, string, string];
 }
@@ -35,7 +35,6 @@ export const traps: Trap[] = [
       whatItProtects:
         "The sunk cost spiral protects you from the pain of admitting waste. Walking away means accepting that your past investment was, in some sense, meaningless. The ego cannot tolerate this easily. By continuing, you maintain the illusion that everything you've done had purpose. The spiral protects you from grief — the grief of time lost, potential wasted, and the terrifying freedom of starting over.",
     },
-    youtubeId: "dQw4w9WgXcQ",
     publishedAt: "2025-01-15",
     relatedSlugs: ["confirmation-cage", "anchoring-abyss", "normalcy-veil"],
   },
@@ -56,7 +55,6 @@ export const traps: Trap[] = [
       whatItProtects:
         "The confirmation cage protects your identity. Your beliefs aren't just ideas — they're the scaffolding of who you think you are. Contradictory evidence doesn't just challenge a position; it threatens your sense of self. The cage keeps your world coherent and predictable. Without it, you'd have to tolerate ambiguity, uncertainty, and the exhausting possibility that you might be fundamentally wrong about things that matter to you.",
     },
-    youtubeId: "dQw4w9WgXcQ",
     publishedAt: "2025-02-01",
     relatedSlugs: ["sunk-cost-spiral", "dunning-kruger-mirror", "halo-distortion"],
   },
@@ -77,7 +75,6 @@ export const traps: Trap[] = [
       whatItProtects:
         "The mirror protects you from the vertigo of genuine understanding. True competence reveals how vast and complex any domain really is — and that revelation can be paralyzing. The Dunning-Kruger mirror lets you operate with comfortable certainty. It protects you from the humility required to say \"I don't know,\" which, in most social environments, feels like weakness. The mirror lets you feel powerful in a world that rewards confidence over accuracy.",
     },
-    youtubeId: "dQw4w9WgXcQ",
     publishedAt: "2025-02-20",
     relatedSlugs: ["confirmation-cage", "anchoring-abyss", "halo-distortion"],
   },
@@ -98,7 +95,6 @@ export const traps: Trap[] = [
       whatItProtects:
         "Anchoring protects you from the cognitive cost of evaluating everything from scratch. Genuine independent judgment is exhausting — it requires research, comparison, and sustained mental effort for every single decision. The anchor gives you a starting point, a shortcut through complexity. It protects you from the overwhelming paralysis of having no reference frame at all. The problem is that the starting point was chosen for you, usually by someone who benefits from your destination.",
     },
-    youtubeId: "dQw4w9WgXcQ",
     publishedAt: "2025-03-10",
     relatedSlugs: ["sunk-cost-spiral", "dunning-kruger-mirror", "normalcy-veil"],
   },
@@ -119,7 +115,6 @@ export const traps: Trap[] = [
       whatItProtects:
         "The veil protects you from anxiety. If you truly internalized the probability of catastrophic events — natural disasters, economic collapse, personal betrayal — daily life would become unbearable. The normalcy veil lets you function by filtering out threats that feel too large to prepare for. It protects your sense of control in a world that offers very little. Removing the veil means accepting vulnerability, and vulnerability is something the human psyche fights against with everything it has.",
     },
-    youtubeId: "dQw4w9WgXcQ",
     publishedAt: "2025-04-05",
     relatedSlugs: ["confirmation-cage", "sunk-cost-spiral", "halo-distortion"],
   },
@@ -140,7 +135,6 @@ export const traps: Trap[] = [
       whatItProtects:
         "The halo protects you from the overwhelming complexity of complete evaluation. Truly assessing every trait of every person or product independently would be cognitively exhausting and socially paralyzing. The halo provides a shortcut: if this one thing is good, everything is probably good. It lets you make quick social judgments, form alliances, and navigate a complex world without drowning in analysis. The halo also protects your emotional investments — once you've decided someone is good, the halo prevents the painful work of discovering they might not be.",
     },
-    youtubeId: "dQw4w9WgXcQ",
     publishedAt: "2025-05-01",
     relatedSlugs: ["dunning-kruger-mirror", "normalcy-veil", "confirmation-cage"],
   },

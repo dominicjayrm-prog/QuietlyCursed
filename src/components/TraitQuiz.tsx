@@ -201,15 +201,17 @@ export default function TraitQuiz() {
         </div>
 
         {/* Recommended video */}
-        <div>
-          <h3 className="mb-4 text-sm font-semibold tracking-wider uppercase text-white/40">
-            Recommended Watch
-          </h3>
-          <YouTubeEmbed
-            videoId={primary.youtubeId}
-            title={`${primary.name} — Recommended`}
-          />
-        </div>
+        {primary.youtubeId && (
+          <div>
+            <h3 className="mb-4 text-sm font-semibold tracking-wider uppercase text-white/40">
+              Recommended Watch
+            </h3>
+            <YouTubeEmbed
+              videoId={primary.youtubeId}
+              title={`${primary.name} — Recommended`}
+            />
+          </div>
+        )}
 
         {/* Recommended traps */}
         {recommendedTraps.length > 0 && (
