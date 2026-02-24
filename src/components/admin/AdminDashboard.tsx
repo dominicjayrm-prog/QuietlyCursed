@@ -8,6 +8,7 @@ import GalleryManager from "./GalleryManager";
 import QuizAnalytics from "./QuizAnalytics";
 import TrafficAnalytics from "./TrafficAnalytics";
 import LinkGenerator from "./LinkGenerator";
+import UserManager from "./UserManager";
 
 const TABS = [
   "Atlas",
@@ -15,6 +16,7 @@ const TABS = [
   "Quiz Analytics",
   "Traffic & UTM",
   "Link Generator",
+  "Users",
 ] as const;
 type Tab = (typeof TABS)[number];
 
@@ -68,6 +70,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
       {activeTab === "Quiz Analytics" && <QuizAnalytics />}
       {activeTab === "Traffic & UTM" && <TrafficAnalytics />}
       {activeTab === "Link Generator" && <LinkGenerator />}
+      {activeTab === "Users" && <UserManager />}
     </section>
   );
 }
