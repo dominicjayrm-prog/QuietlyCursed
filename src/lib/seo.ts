@@ -120,6 +120,7 @@ export function buildAtlasPostJsonLd(post: AtlasPost): string {
       post.title,
       "mental model",
       "quietly cursed",
+      ...(post.tags ?? []),
     ],
   };
 
