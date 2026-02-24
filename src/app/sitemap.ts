@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPublishedPosts } from "@/lib/atlas";
-
-const SITE_URL = "https://quietlycursed.com";
+import { SITE_URL } from "@/lib/seo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ─── Static pages ───────────────────────────────────────

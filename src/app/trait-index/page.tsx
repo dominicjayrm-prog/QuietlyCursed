@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
 import TraitIndexLanding from "@/components/TraitIndexLanding";
 
 export const metadata: Metadata = buildMetadata({
@@ -16,11 +16,11 @@ function TraitIndexJsonLd() {
     name: "The Trait Index — Psychological Archetype Quiz",
     description:
       "A 12-question psychological archetype assessment that identifies your dominant identity pattern across six archetypes: The Watcher, The Prototype, The Climber, The Ghost, The Container, and The Peacemaker.",
-    url: "https://quietlycursed.com/trait-index",
+    url: `${SITE_URL}/trait-index`,
     provider: {
       "@type": "Organization",
-      name: "Quietly Cursed",
-      url: "https://quietlycursed.com",
+      name: SITE_NAME,
+      url: SITE_URL,
     },
     about: {
       "@type": "Thing",
