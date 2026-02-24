@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import type { MascotImage } from "@/data/mascot";
 
 interface MascotGalleryProps {
@@ -72,11 +73,12 @@ export default function MascotGallery({ images: staticImages }: MascotGalleryPro
             onClick={() => setLightboxIndex(i)}
           >
             <div className="relative aspect-square overflow-hidden bg-neutral-900/50">
-              <img
+              <Image
                 src={img.src}
                 alt={img.alt}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 640px) 100vw, 50vw"
               />
               {/* Hover overlay */}
               <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">

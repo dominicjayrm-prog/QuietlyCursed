@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Lightweight Markdown renderer.
  * Supports: headings (##, ###), bold (**), italic (*), links [text](url),

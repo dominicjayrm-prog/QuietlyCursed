@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 /**
  * Renders TipTap JSON content into SEO-friendly React elements.
  * Outputs real heading tags, paragraph tags, etc. for search engines.
@@ -101,12 +103,13 @@ function RenderNode({ node }: { node: TipTapNode }) {
       if (!src) return null;
       return (
         <figure className="my-8">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={src}
             alt={alt}
+            width={768}
+            height={432}
             className="w-full rounded-xl border border-white/5"
-            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 768px"
           />
           {alt && (
             <figcaption className="mt-2 text-center text-xs text-white/30">
