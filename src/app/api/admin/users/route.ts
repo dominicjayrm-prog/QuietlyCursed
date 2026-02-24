@@ -1,55 +1,28 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-function getAuthClient(request: Request) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-
-  const token = request.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-
-  return createClient(url, key, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
-
-function getServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
+import { requireAuth, getServiceClient, safeError } from "@/lib/api-helpers";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 /** GET /api/admin/users — list all auth users */
 export async function GET(request: Request) {
-  const supabase = getAuthClient(request);
-  if (!supabase)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = rateLimit(`admin-users-get:${getClientIp(request)}`, {
+    limit: 15,
+    windowMs: 60_000,
+  });
+  if (limited) return limited;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
 
   const service = getServiceClient();
   if (!service)
-    return NextResponse.json(
-      { error: "Service role key not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
 
   const {
     data: { users },
     error,
   } = await service.auth.admin.listUsers();
 
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return safeError("admin/users GET", error);
 
   // Return only safe fields
   const safeUsers = (users ?? []).map((u) => ({
@@ -65,22 +38,18 @@ export async function GET(request: Request) {
 
 /** POST /api/admin/users — create a new admin user */
 export async function POST(request: Request) {
-  const supabase = getAuthClient(request);
-  if (!supabase)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = rateLimit(`admin-users-post:${getClientIp(request)}`, {
+    limit: 5,
+    windowMs: 60_000,
+  });
+  if (limited) return limited;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
 
   const service = getServiceClient();
   if (!service)
-    return NextResponse.json(
-      { error: "Service role key not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
 
   const body = await request.json();
   const { email, password } = body;
@@ -105,8 +74,13 @@ export async function POST(request: Request) {
     email_confirm: true,
   });
 
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) {
+    console.error("[admin/users POST]", error.message);
+    return NextResponse.json(
+      { error: "Failed to create user. The email may already be in use." },
+      { status: 400 }
+    );
+  }
 
   return NextResponse.json(
     {
@@ -120,22 +94,18 @@ export async function POST(request: Request) {
 
 /** DELETE /api/admin/users — delete a user by id */
 export async function DELETE(request: Request) {
-  const supabase = getAuthClient(request);
-  if (!supabase)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = rateLimit(`admin-users-del:${getClientIp(request)}`, {
+    limit: 5,
+    windowMs: 60_000,
+  });
+  if (limited) return limited;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
 
   const service = getServiceClient();
   if (!service)
-    return NextResponse.json(
-      { error: "Service role key not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
 
   const { searchParams } = new URL(request.url);
   const targetId = searchParams.get("id");
@@ -147,7 +117,7 @@ export async function DELETE(request: Request) {
     );
 
   // Prevent self-deletion
-  if (targetId === user.id)
+  if (targetId === auth.user.id)
     return NextResponse.json(
       { error: "You cannot delete your own account" },
       { status: 400 }
@@ -155,8 +125,13 @@ export async function DELETE(request: Request) {
 
   const { error } = await service.auth.admin.deleteUser(targetId);
 
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) {
+    console.error("[admin/users DELETE]", error.message);
+    return NextResponse.json(
+      { error: "Failed to delete user" },
+      { status: 400 }
+    );
+  }
 
   return NextResponse.json({ success: true });
 }

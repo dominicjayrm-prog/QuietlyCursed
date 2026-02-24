@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "SUPABASE_DB_URL not configured. Add your Supabase database connection string to Vercel env vars, or run the migration SQL manually in the Supabase Dashboard SQL Editor.",
+          "Database connection not configured. Run the migration SQL manually in the Supabase Dashboard SQL Editor.",
         sql: MIGRATION_SQL.trim(),
       },
       { status: 500 }
@@ -234,9 +234,10 @@ export async function POST(request: Request) {
     });
   } catch (e) {
     await sql.end().catch(() => {});
+    console.error("[setup migration]", e instanceof Error ? e.message : e);
     return NextResponse.json(
       {
-        error: `Migration failed: ${e instanceof Error ? e.message : "Unknown error"}. Try running the SQL manually in Supabase Dashboard.`,
+        error: "Migration failed. Check server logs or run the SQL manually in Supabase Dashboard.",
         sql: MIGRATION_SQL.trim(),
       },
       { status: 500 }
