@@ -18,6 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="alternate" type="application/rss+xml" title="Quietly Cursed — The Atlas" href="/rss.xml" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: buildWebsiteJsonLd() }}

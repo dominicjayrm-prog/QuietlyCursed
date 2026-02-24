@@ -16,6 +16,7 @@ export interface AtlasPost {
   meta_title: string | null;
   meta_description: string | null;
   related_posts: string[];
+  tags: string[];
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -81,6 +82,46 @@ export async function getRelatedPosts(ids: string[]): Promise<AtlasPost[]> {
     .select("*")
     .in("id", ids)
     .eq("is_published", true);
+
+  return data ?? [];
+}
+
+/** Collect all unique tags from published posts */
+export async function getAllTags(): Promise<string[]> {
+  const supabase = getServiceSupabase();
+  if (!supabase) return [];
+
+  const { data } = await supabase
+    .from("atlas_posts")
+    .select("tags")
+    .eq("is_published", true);
+
+  if (!data) return [];
+  const set = new Set<string>();
+  for (const row of data) {
+    for (const tag of row.tags ?? []) set.add(tag);
+  }
+  return Array.from(set).sort();
+}
+
+/** Fetch published posts that share tags with the given post (excluding it) */
+export async function getRelatedPostsByTags(
+  postId: string,
+  tags: string[],
+  limit = 4
+): Promise<AtlasPost[]> {
+  if (!tags || tags.length === 0) return [];
+  const supabase = getServiceSupabase();
+  if (!supabase) return [];
+
+  const { data } = await supabase
+    .from("atlas_posts")
+    .select("*")
+    .eq("is_published", true)
+    .neq("id", postId)
+    .overlaps("tags", tags)
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   return data ?? [];
 }

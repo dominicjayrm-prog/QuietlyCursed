@@ -6,13 +6,16 @@ import {
   getPublishedPostBySlug,
   getAllPublishedSlugs,
   getRelatedPosts,
+  getRelatedPostsByTags,
 } from "@/lib/atlas";
-import { buildMetadata, buildAtlasPostJsonLd } from "@/lib/seo";
+import { buildMetadata, buildAtlasPostJsonLd, SITE_URL } from "@/lib/seo";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import MarkdownContent from "@/components/MarkdownContent";
 import RichContentRenderer from "@/components/RichContentRenderer";
 import BrainIcon from "@/components/BrainIcon";
 import EyeGlow from "@/components/EyeGlow";
+import ShareButtons from "@/components/ShareButtons";
+import EmailSignup from "@/components/EmailSignup";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -47,7 +50,11 @@ export default async function AtlasPostPage({ params }: PageProps) {
   const post = await getPublishedPostBySlug(slug);
   if (!post) notFound();
 
-  const related = await getRelatedPosts(post.related_posts ?? []);
+  // Prefer tag-based related posts, fall back to manually linked
+  let related = await getRelatedPostsByTags(post.id, post.tags ?? []);
+  if (related.length === 0 && post.related_posts?.length > 0) {
+    related = await getRelatedPosts(post.related_posts);
+  }
   const hasJsonContent =
     post.content_format === "json" && post.content_json != null;
 
@@ -111,6 +118,18 @@ export default async function AtlasPostPage({ params }: PageProps) {
           {post.subtitle && (
             <p className="text-lg text-cyan-400/70 italic">{post.subtitle}</p>
           )}
+          {post.tags && post.tags.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs tracking-wider uppercase text-white/40"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </header>
 
         {/* Video */}
@@ -132,6 +151,12 @@ export default async function AtlasPostPage({ params }: PageProps) {
             <MarkdownContent content={post.content} />
           </div>
         ) : null}
+
+        {/* Share */}
+        <ShareButtons
+          url={`${SITE_URL}/atlas/${post.slug}`}
+          title={post.title}
+        />
 
         {/* Related Posts */}
         {related.length > 0 && (
@@ -178,6 +203,11 @@ export default async function AtlasPostPage({ params }: PageProps) {
             <BrainIcon className="w-4 h-4 text-cyan-400" />
             Take the Trait Index
           </Link>
+        </section>
+
+        {/* Email Signup */}
+        <section className="mt-12">
+          <EmailSignup />
         </section>
 
         {/* Back to Atlas */}

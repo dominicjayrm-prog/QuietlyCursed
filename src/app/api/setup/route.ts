@@ -34,6 +34,22 @@ ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS content_json jsonb;
 ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS content_format text DEFAULT 'markdown';
 ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_url text;
 ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_alt text;
+ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS tags text[] DEFAULT '{}';
+CREATE INDEX IF NOT EXISTS idx_atlas_posts_tags ON atlas_posts USING GIN (tags);
+-- Email subscribers
+CREATE TABLE IF NOT EXISTS email_subscribers (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  email text NOT NULL UNIQUE,
+  confirmed boolean DEFAULT false,
+  confirm_token uuid DEFAULT gen_random_uuid(),
+  subscribed_at timestamptz DEFAULT now(),
+  confirmed_at timestamptz,
+  unsubscribed_at timestamptz
+);
+ALTER TABLE email_subscribers ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN CREATE POLICY "Admins can read subscribers" ON email_subscribers FOR SELECT USING (auth.role() = 'authenticated'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "Anyone can subscribe" ON email_subscribers FOR INSERT WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "Token-based updates" ON email_subscribers FOR UPDATE USING (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 `;
 
 /** GET /api/setup — check if atlas_posts table exists */
@@ -145,11 +161,48 @@ export async function POST(request: Request) {
         EXECUTE FUNCTION update_atlas_posts_updated_at()
     `;
 
-    // Rich editor & banner columns (idempotent)
+    // Rich editor, banner & tags columns (idempotent)
     await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS content_json jsonb`;
     await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS content_format text DEFAULT 'markdown'`;
     await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_url text`;
     await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS banner_alt text`;
+    await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS tags text[] DEFAULT '{}'`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_atlas_posts_tags ON atlas_posts USING GIN (tags)`;
+
+    // ─── email_subscribers table ────
+    await sql`
+      CREATE TABLE IF NOT EXISTS email_subscribers (
+        id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+        email text NOT NULL UNIQUE,
+        confirmed boolean DEFAULT false,
+        confirm_token uuid DEFAULT gen_random_uuid(),
+        subscribed_at timestamptz DEFAULT now(),
+        confirmed_at timestamptz,
+        unsubscribed_at timestamptz
+      )
+    `;
+    await sql`ALTER TABLE email_subscribers ENABLE ROW LEVEL SECURITY`;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Admins can read subscribers"
+          ON email_subscribers FOR SELECT USING (auth.role() = 'authenticated');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Anyone can subscribe"
+          ON email_subscribers FOR INSERT WITH CHECK (true);
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Token-based updates"
+          ON email_subscribers FOR UPDATE USING (true);
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
 
     // ─── page_views table (analytics & UTM tracking) ────
     await sql`
@@ -230,7 +283,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       status: "ok",
       message:
-        "Migration completed. atlas_posts, page_views, and sessions tables created with RLS.",
+        "Migration completed. atlas_posts, email_subscribers, page_views, and sessions tables created with RLS.",
     });
   } catch (e) {
     await sql.end().catch(() => {});

@@ -33,6 +33,7 @@ interface AtlasPost {
   meta_title: string | null;
   meta_description: string | null;
   related_posts: string[];
+  tags: string[];
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -55,6 +56,7 @@ const EMPTY_FORM: PostForm = {
   meta_title: "",
   meta_description: "",
   related_posts: [],
+  tags: [],
   is_published: false,
 };
 
@@ -160,6 +162,7 @@ export default function AtlasManager() {
       meta_title: post.meta_title ?? "",
       meta_description: post.meta_description ?? "",
       related_posts: post.related_posts ?? [],
+      tags: post.tags ?? [],
       is_published: post.is_published,
     });
     setEditingId(post.id);
@@ -275,6 +278,7 @@ export default function AtlasManager() {
       banner_alt: form.banner_alt || null,
       meta_title: form.meta_title || null,
       meta_description: form.meta_description || null,
+      tags: form.tags,
     };
 
     const url = editingId
@@ -641,6 +645,52 @@ export default function AtlasManager() {
             rows={2}
             className="w-full resize-none rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:border-cyan-500/40 focus:outline-none"
           />
+        </div>
+
+        {/* Tags */}
+        <div>
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/40">
+            Tags
+          </label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {form.tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-400"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateField(
+                      "tags",
+                      form.tags.filter((t) => t !== tag)
+                    )
+                  }
+                  className="text-cyan-400/60 hover:text-cyan-400 cursor-pointer"
+                >
+                  &times;
+                </button>
+              </span>
+            ))}
+          </div>
+          <input
+            placeholder="Type a tag and press Enter"
+            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:border-cyan-500/40 focus:outline-none"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const val = (e.target as HTMLInputElement).value.trim().toLowerCase();
+                if (val && !form.tags.includes(val)) {
+                  updateField("tags", [...form.tags, val]);
+                }
+                (e.target as HTMLInputElement).value = "";
+              }
+            }}
+          />
+          <p className="mt-1.5 text-xs text-white/20">
+            Press Enter to add. e.g. narcissism, cognitive-bias, dark-triad
+          </p>
         </div>
 
         {/* SEO Fields */}
