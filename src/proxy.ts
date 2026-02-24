@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Edge middleware — runs before every matched route.
+ * Proxy — runs before every matched route.
  *
  * 1. Protects /admin (non-login) pages: redirects to /admin/login when
  *    no Supabase auth cookies are present.
@@ -20,7 +20,7 @@ function isAuthenticated(request: NextRequest): boolean {
   return false;
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── CORS gate for /api/admin/* ──────────────────────────────────
