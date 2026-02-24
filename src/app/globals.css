@@ -107,3 +107,50 @@ body {
   background: rgba(34, 211, 238, 0.2);
   color: #fff;
 }
+
+/* ─── Accessibility ─────────────────────────────────────── */
+
+/* Focus-visible ring for keyboard navigation (WCAG 2.1 AA) */
+:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.7);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove the default focus ring for mouse/touch users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Skip-to-content link — visible only on keyboard focus */
+.skip-to-content {
+  position: fixed;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: #0a0a0a;
+  border: 2px solid rgba(34, 211, 238, 0.7);
+  border-radius: 9999px;
+  color: #22d3ee;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: top 0.15s ease;
+}
+
+.skip-to-content:focus {
+  top: 1rem;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

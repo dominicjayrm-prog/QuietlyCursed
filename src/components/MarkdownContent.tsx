@@ -100,7 +100,7 @@ export default function MarkdownContent({ content }: { content: string }) {
           return (
             <blockquote
               key={i}
-              className="border-l-2 border-cyan-500/30 pl-5 text-base italic text-white/45 leading-[1.8]"
+              className="border-l-2 border-cyan-500/30 pl-5 text-base italic text-white/60 leading-[1.8]"
             >
               <InlineMarkdown text={block.content} />
             </blockquote>

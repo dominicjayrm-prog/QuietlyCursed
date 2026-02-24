@@ -39,7 +39,30 @@ export default function QuizAnalytics() {
   }, []);
 
   if (loading) {
-    return <div className="py-12 text-center text-sm text-white/30">Loading analytics...</div>;
+    return (
+      <div className="space-y-8 animate-pulse">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
+              <div className="mb-2 h-3 w-20 rounded bg-white/5" />
+              <div className="h-7 w-16 rounded bg-white/5" />
+            </div>
+          ))}
+        </div>
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
+          <div className="mb-5 h-4 w-48 rounded bg-white/5" />
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="h-3 w-24 rounded bg-white/5" />
+                <div className="h-3 flex-1 rounded-full bg-white/5" />
+                <div className="h-3 w-10 rounded bg-white/5" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (results.length === 0) {

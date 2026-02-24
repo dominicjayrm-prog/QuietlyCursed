@@ -64,14 +64,14 @@ export default function TraitIndexLanding() {
           A psychologically serious archetype assessment.
         </p>
 
-        <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-white/45 md:text-lg">
+        <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-white/60 md:text-lg">
           Most personality tests sort you into comfortable categories. This one
           maps the psychological patterns you actually live inside — the roles
           you play, the defences you run, the identity you&apos;ve built without
           realising it.
         </p>
 
-        <ul className="mx-auto mb-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/35">
+        <ul className="mx-auto mb-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/50">
           <li className="flex items-center gap-2">
             <span className="h-1 w-1 rounded-full bg-cyan-400/50" />
             12 questions
@@ -105,7 +105,7 @@ export default function TraitIndexLanding() {
         <h2 className="mb-6 text-center text-2xl font-bold tracking-tight text-white md:text-3xl">
           Why This Is Different
         </h2>
-        <div className="mx-auto max-w-2xl space-y-4 text-center text-base leading-[1.85] text-white/45">
+        <div className="mx-auto max-w-2xl space-y-4 text-center text-base leading-[1.85] text-white/60">
           <p>
             This is not MBTI. This is not a colour-coded personality label
             designed to make you feel understood in four letters.
@@ -130,7 +130,7 @@ export default function TraitIndexLanding() {
         <h2 className="mb-3 text-center text-2xl font-bold tracking-tight text-white md:text-3xl">
           The Six Archetypes
         </h2>
-        <p className="mx-auto mb-10 max-w-lg text-center text-sm text-white/30">
+        <p className="mx-auto mb-10 max-w-lg text-center text-sm text-white/50">
           One runs deepest. Find out which.
         </p>
 
@@ -143,7 +143,7 @@ export default function TraitIndexLanding() {
               <h3 className="mb-2 text-base font-semibold text-white/80 transition-colors group-hover:text-cyan-400">
                 {arch.name}
               </h3>
-              <p className="text-sm leading-relaxed text-white/35 transition-colors group-hover:text-white/50">
+              <p className="text-sm leading-relaxed text-white/50 transition-colors group-hover:text-white/60">
                 {arch.teaser}
               </p>
             </div>
@@ -155,7 +155,7 @@ export default function TraitIndexLanding() {
       <section
         className={`border-t border-white/5 py-16 md:py-20 text-center transition-all duration-1000 delay-500 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
       >
-        <ul className="mx-auto mb-8 max-w-md space-y-3 text-sm text-white/40">
+        <ul className="mx-auto mb-8 max-w-md space-y-3 text-sm text-white/60">
           <li className="flex items-center justify-center gap-3">
             <svg
               viewBox="0 0 24 24"

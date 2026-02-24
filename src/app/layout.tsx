@@ -24,10 +24,13 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-neutral-950 text-white antialiased">
+        <a href="#main-content" className="skip-to-content">
+          Skip to content
+        </a>
         <GrainOverlay />
         <UtmCapture />
         <Header />
-        <main className="pt-[72px]">{children}</main>
+        <main id="main-content" className="pt-[72px]">{children}</main>
         <Footer />
         <CookieConsent />
       </body>

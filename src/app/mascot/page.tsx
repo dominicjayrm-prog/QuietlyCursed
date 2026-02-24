@@ -33,8 +33,8 @@ export default function MascotPage() {
               i === 0
                 ? "text-lg leading-[2] text-white/60 md:text-xl tracking-wide"
                 : i === mascotLore.description.split("\n\n").length - 1
-                  ? "text-base leading-[2] text-white/35 md:text-lg italic"
-                  : "text-base leading-[2] text-white/45 md:text-lg"
+                  ? "text-base leading-[2] text-white/50 md:text-lg italic"
+                  : "text-base leading-[2] text-white/60 md:text-lg"
             }
           >
             {paragraph}
@@ -47,10 +47,10 @@ export default function MascotPage() {
         <h2 className="mb-3 text-center text-2xl font-semibold text-white/70">
           Manifestations
         </h2>
-        <p className="mx-auto mb-4 max-w-lg text-center text-sm leading-relaxed text-white/40">
+        <p className="mx-auto mb-4 max-w-lg text-center text-sm leading-relaxed text-white/60">
           The Watcher shifts form depending on the trap it observes.
         </p>
-        <p className="mx-auto mb-10 max-w-lg text-center text-sm leading-relaxed text-white/30 italic">
+        <p className="mx-auto mb-10 max-w-lg text-center text-sm leading-relaxed text-white/50 italic">
           It changes posture, but never expression.
         </p>
         <MascotGallery images={mascotGallery} />

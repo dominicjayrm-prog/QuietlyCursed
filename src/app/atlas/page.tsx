@@ -25,7 +25,7 @@ export default async function AtlasPage() {
         <h1 className="mb-4 text-3xl font-bold tracking-tight text-white md:text-5xl">
           The Atlas
         </h1>
-        <p className="mx-auto max-w-xl text-base leading-relaxed text-white/45 md:text-lg">
+        <p className="mx-auto max-w-xl text-base leading-relaxed text-white/60 md:text-lg">
           The written case files behind each episode. Explore the psychology.
           Understand the pattern. See where it lives in you.
         </p>
@@ -35,7 +35,7 @@ export default async function AtlasPage() {
       {posts.length === 0 ? (
         <div className="mx-auto max-w-md rounded-2xl border border-white/5 bg-white/[0.02] p-12 text-center animate-fade-in-up-delay-1">
           <EyeGlow size="sm" className="mx-auto mb-4 w-8 h-4 opacity-30" />
-          <p className="text-sm text-white/30">
+          <p className="text-sm text-white/50">
             Case files are being compiled. The first entry is coming soon.
           </p>
         </div>
