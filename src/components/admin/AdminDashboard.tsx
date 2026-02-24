@@ -9,10 +9,12 @@ import QuizAnalytics from "./QuizAnalytics";
 import TrafficAnalytics from "./TrafficAnalytics";
 import LinkGenerator from "./LinkGenerator";
 import UserManager from "./UserManager";
+import SubscriberManager from "./SubscriberManager";
 
 const TABS = [
   "Atlas",
   "Gallery",
+  "Subscribers",
   "Quiz Analytics",
   "Traffic & UTM",
   "Link Generator",
@@ -67,6 +69,7 @@ export default function AdminDashboard({ userEmail }: { userEmail: string }) {
       {/* Tab content */}
       {activeTab === "Atlas" && <AtlasManager />}
       {activeTab === "Gallery" && <GalleryManager />}
+      {activeTab === "Subscribers" && <SubscriberManager />}
       {activeTab === "Quiz Analytics" && <QuizAnalytics />}
       {activeTab === "Traffic & UTM" && <TrafficAnalytics />}
       {activeTab === "Link Generator" && <LinkGenerator />}

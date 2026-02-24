@@ -40,16 +40,11 @@ CREATE INDEX IF NOT EXISTS idx_atlas_posts_tags ON atlas_posts USING GIN (tags);
 CREATE TABLE IF NOT EXISTS email_subscribers (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   email text NOT NULL UNIQUE,
-  confirmed boolean DEFAULT false,
-  confirm_token uuid DEFAULT gen_random_uuid(),
-  subscribed_at timestamptz DEFAULT now(),
-  confirmed_at timestamptz,
-  unsubscribed_at timestamptz
+  subscribed_at timestamptz DEFAULT now()
 );
 ALTER TABLE email_subscribers ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN CREATE POLICY "Admins can read subscribers" ON email_subscribers FOR SELECT USING (auth.role() = 'authenticated'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY "Anyone can subscribe" ON email_subscribers FOR INSERT WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN CREATE POLICY "Token-based updates" ON email_subscribers FOR UPDATE USING (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 `;
 
 /** GET /api/setup — check if atlas_posts table exists */
@@ -174,11 +169,7 @@ export async function POST(request: Request) {
       CREATE TABLE IF NOT EXISTS email_subscribers (
         id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
         email text NOT NULL UNIQUE,
-        confirmed boolean DEFAULT false,
-        confirm_token uuid DEFAULT gen_random_uuid(),
-        subscribed_at timestamptz DEFAULT now(),
-        confirmed_at timestamptz,
-        unsubscribed_at timestamptz
+        subscribed_at timestamptz DEFAULT now()
       )
     `;
     await sql`ALTER TABLE email_subscribers ENABLE ROW LEVEL SECURITY`;
@@ -193,13 +184,6 @@ export async function POST(request: Request) {
       DO $$ BEGIN
         CREATE POLICY "Anyone can subscribe"
           ON email_subscribers FOR INSERT WITH CHECK (true);
-      EXCEPTION WHEN duplicate_object THEN NULL;
-      END $$
-    `;
-    await sql`
-      DO $$ BEGIN
-        CREATE POLICY "Token-based updates"
-          ON email_subscribers FOR UPDATE USING (true);
       EXCEPTION WHEN duplicate_object THEN NULL;
       END $$
     `;
