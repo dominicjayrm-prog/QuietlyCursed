@@ -117,7 +117,7 @@ export default function TraitQuiz() {
       .filter(Boolean);
 
     return (
-      <div className="space-y-12 animate-fade-in-up">
+      <div className="space-y-12 animate-fade-in-up" aria-live="polite">
         {/* Primary archetype */}
         <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/[0.04] p-6 md:p-10">
           <p className="mb-2 text-xs tracking-widest uppercase text-cyan-400/60">
@@ -129,13 +129,13 @@ export default function TraitQuiz() {
           <p className="mb-6 text-lg text-cyan-400/70 italic">
             {primary.title}
           </p>
-          <p className="mb-6 text-base leading-[1.8] text-white/55">
+          <p className="mb-6 text-base leading-[1.8] text-white/60">
             {primary.description}
           </p>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <h3 className="mb-2 text-sm font-semibold tracking-wider uppercase text-white/40">
+              <h3 className="mb-2 text-sm font-semibold tracking-wider uppercase text-white/60">
                 Strengths
               </h3>
               <p className="text-sm leading-relaxed text-white/50">
@@ -143,7 +143,7 @@ export default function TraitQuiz() {
               </p>
             </div>
             <div>
-              <h3 className="mb-2 text-sm font-semibold tracking-wider uppercase text-white/40">
+              <h3 className="mb-2 text-sm font-semibold tracking-wider uppercase text-white/60">
                 Blind Spot
               </h3>
               <p className="text-sm leading-relaxed text-white/50">
@@ -161,10 +161,10 @@ export default function TraitQuiz() {
           <h3 className="mb-1 text-2xl font-bold text-white/90">
             {secondary.name}
           </h3>
-          <p className="mb-4 text-base text-white/40 italic">
+          <p className="mb-4 text-base text-white/60 italic">
             {secondary.title}
           </p>
-          <p className="text-sm leading-[1.8] text-white/45">
+          <p className="text-sm leading-[1.8] text-white/60">
             {secondary.description}
           </p>
         </div>
@@ -262,13 +262,20 @@ export default function TraitQuiz() {
     <div className="space-y-8">
       {/* Progress bar */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-white/30">
-          <span>
+        <div className="flex items-center justify-between text-xs text-white/50">
+          <span aria-live="polite">
             Question {currentQ + 1} of {questions.length}
           </span>
           <span>{progress} answered</span>
         </div>
-        <div className="h-1 rounded-full bg-white/5 overflow-hidden">
+        <div
+          className="h-1 rounded-full bg-white/5 overflow-hidden"
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={questions.length}
+          aria-label={`Quiz progress: ${progress} of ${questions.length} questions answered`}
+        >
           <div
             className="h-full rounded-full bg-gradient-to-r from-cyan-500/50 to-cyan-400/70 transition-all duration-500"
             style={{
@@ -285,7 +292,7 @@ export default function TraitQuiz() {
         </p>
 
         {question.type === "likert" ? (
-          <div className="space-y-3">
+          <div className="space-y-3" role="radiogroup" aria-label={question.text}>
             {LIKERT_LABELS.map((label, i) => {
               const value = i + 1;
               const isSelected = answers[question.id] === value;
@@ -293,6 +300,8 @@ export default function TraitQuiz() {
                 <button
                   key={value}
                   onClick={() => handleLikert(value)}
+                  role="radio"
+                  aria-checked={isSelected}
                   className={`flex w-full items-center gap-4 rounded-xl border px-5 py-3.5 text-left text-sm transition-all cursor-pointer ${
                     isSelected
                       ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-400"
@@ -300,6 +309,7 @@ export default function TraitQuiz() {
                   }`}
                 >
                   <span
+                    aria-hidden="true"
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                       isSelected
                         ? "border-cyan-400 bg-cyan-400"
@@ -316,13 +326,15 @@ export default function TraitQuiz() {
             })}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3" role="radiogroup" aria-label={question.text}>
             {question.options?.map((option) => {
               const isSelected = answers[question.id] === option.text;
               return (
                 <button
                   key={option.text}
                   onClick={() => handleChoice(option.text)}
+                  role="radio"
+                  aria-checked={isSelected}
                   className={`flex w-full items-center gap-4 rounded-xl border px-5 py-3.5 text-left text-sm transition-all cursor-pointer ${
                     isSelected
                       ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-400"
@@ -330,6 +342,7 @@ export default function TraitQuiz() {
                   }`}
                 >
                   <span
+                    aria-hidden="true"
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                       isSelected
                         ? "border-cyan-400 bg-cyan-400"

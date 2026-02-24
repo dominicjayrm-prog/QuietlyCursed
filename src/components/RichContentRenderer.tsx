@@ -60,7 +60,7 @@ function RenderNode({ node }: { node: TipTapNode }) {
       );
     case "blockquote":
       return (
-        <blockquote className="border-l-2 border-cyan-500/30 pl-5 text-base italic text-white/45 leading-[1.8]">
+        <blockquote className="border-l-2 border-cyan-500/30 pl-5 text-base italic text-white/60 leading-[1.8]">
           {node.content?.map((child, i) => (
             <RenderNode key={i} node={child} />
           ))}

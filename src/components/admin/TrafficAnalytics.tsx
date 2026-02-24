@@ -62,8 +62,38 @@ export default function TrafficAnalytics() {
 
   if (loading) {
     return (
-      <div className="py-12 text-center text-sm text-white/30">
-        Loading traffic data...
+      <div className="space-y-8 animate-pulse">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
+              <div className="mb-2 h-3 w-16 rounded bg-white/5" />
+              <div className="h-7 w-12 rounded bg-white/5" />
+            </div>
+          ))}
+        </div>
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
+          <div className="mb-5 h-4 w-40 rounded bg-white/5" />
+          <div className="flex h-32 items-end gap-1">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div key={i} className="flex-1 rounded-t bg-white/5" style={{ height: `${15 + (i * 37 + 17) % 70}%` }} />
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
+              <div className="mb-5 h-4 w-32 rounded bg-white/5" />
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <div key={j} className="flex items-center justify-between">
+                    <div className="h-3 w-24 rounded bg-white/5" />
+                    <div className="h-3 w-8 rounded bg-white/5" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

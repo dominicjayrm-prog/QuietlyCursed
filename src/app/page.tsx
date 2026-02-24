@@ -64,7 +64,7 @@ export default function HomePage() {
             A psychological atlas of the traps that silently shape your mind.
           </p>
 
-          <p className="animate-fade-in-up-delay-2 mb-10 text-sm text-white/30 tracking-widest uppercase">
+          <p className="animate-fade-in-up-delay-2 mb-10 text-sm text-white/50 tracking-widest uppercase">
             You&apos;re already inside one.
           </p>
 
@@ -86,7 +86,7 @@ export default function HomePage() {
             <h2 className="mb-4 text-2xl font-bold tracking-tight text-white md:text-3xl">
               The Trait Index
             </h2>
-            <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-white/45 md:text-lg">
+            <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-white/60 md:text-lg">
               Not a personality label. Not a type indicator. The Trait Index maps
               the psychological identity pattern you&apos;ve been running your
               entire life — the role you default to, the defence you don&apos;t
@@ -95,7 +95,7 @@ export default function HomePage() {
           </FadeIn>
 
           <FadeIn delay={100}>
-            <ul className="mx-auto mb-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/35">
+            <ul className="mx-auto mb-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/50">
               <li className="flex items-center gap-2">
                 <span className="h-1 w-1 rounded-full bg-cyan-400/50" />
                 12 psychologically weighted questions
@@ -124,10 +124,10 @@ export default function HomePage() {
               <BrainIcon className="w-4 h-4 text-purple-400" />
               Take the Trait Index
             </Link>
-            <p className="mt-4 text-xs text-white/25">
+            <p className="mt-4 text-xs text-white/40">
               Private. Anonymous. Designed for psychological self-reflection.
             </p>
-            <p className="mt-1 text-xs text-white/20">
+            <p className="mt-1 text-xs text-white/40">
               Most people complete this in under 3 minutes.
             </p>
           </FadeIn>
@@ -141,7 +141,7 @@ export default function HomePage() {
             <h3 className="mb-2 text-center text-lg font-semibold tracking-tight text-white/70 md:text-xl">
               The Six Archetypes
             </h3>
-            <p className="mx-auto mb-10 max-w-md text-center text-sm text-white/25">
+            <p className="mx-auto mb-10 max-w-md text-center text-sm text-white/50">
               One runs deepest. The quiz tells you which.
             </p>
           </FadeIn>
@@ -153,7 +153,7 @@ export default function HomePage() {
                   <h4 className="mb-2 text-base font-semibold text-white/80 transition-colors group-hover:text-cyan-400">
                     {arch.name}
                   </h4>
-                  <p className="text-sm leading-relaxed text-white/35 transition-colors group-hover:text-white/50">
+                  <p className="text-sm leading-relaxed text-white/50 transition-colors group-hover:text-white/60">
                     {arch.teaser}
                   </p>
                 </div>
@@ -170,7 +170,7 @@ export default function HomePage() {
             <h2 className="mb-6 text-2xl font-bold tracking-tight text-white md:text-3xl">
               What is the Atlas?
             </h2>
-            <p className="mx-auto max-w-2xl text-base leading-[1.85] text-white/45 md:text-lg">
+            <p className="mx-auto max-w-2xl text-base leading-[1.85] text-white/60 md:text-lg">
               Your brain runs invisible programs — cognitive biases, emotional
               shortcuts, identity loops — that distort every decision you think
               you&apos;re making freely. The Atlas is a structural breakdown of
@@ -179,7 +179,7 @@ export default function HomePage() {
           </FadeIn>
 
           <FadeIn delay={150}>
-            <ul className="mx-auto mt-8 max-w-lg space-y-3 text-left text-sm text-white/40">
+            <ul className="mx-auto mt-8 max-w-lg space-y-3 text-left text-sm text-white/60">
               <li className="flex items-start gap-3">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-500/40" />
                 How each trap operates beneath conscious awareness
@@ -223,7 +223,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-xl space-y-5">
             {EMOTIONAL_DRIVERS.map((line, i) => (
               <FadeIn key={i} delay={i * 120}>
-                <p className="text-sm leading-relaxed text-white/35 italic">
+                <p className="text-sm leading-relaxed text-white/50 italic">
                   &ldquo;{line}&rdquo;
                 </p>
               </FadeIn>
