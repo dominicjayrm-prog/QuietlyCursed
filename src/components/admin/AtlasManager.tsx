@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getSupabase } from "@/lib/supabase/client";
+import { validateImageFile } from "@/lib/api-helpers";
 import dynamic from "next/dynamic";
 import type { TipTapJSON } from "./RichTextEditor";
 
@@ -184,6 +185,13 @@ export default function AtlasManager() {
   async function handleBannerUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setError(validationError);
+      if (bannerFileRef.current) bannerFileRef.current.value = "";
+      return;
+    }
 
     setUploadingBanner(true);
     const supabase = getSupabase();
@@ -580,7 +588,7 @@ export default function AtlasManager() {
           <input
             ref={bannerFileRef}
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/webp"
             onChange={handleBannerUpload}
             className="hidden"
             id="banner-upload"

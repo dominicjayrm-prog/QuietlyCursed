@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { getSupabase } from "@/lib/supabase/client";
+import { validateImageFile } from "@/lib/api-helpers";
 
 interface GalleryImage {
   id: string;
@@ -40,6 +41,13 @@ export default function GalleryManager() {
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      alert(validationError);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
 
     setUploading(true);
     const supabase = getSupabase();
@@ -120,7 +128,7 @@ export default function GalleryManager() {
         <input
           ref={fileRef}
           type="file"
-          accept="image/*"
+          accept="image/png,image/jpeg,image/webp"
           onChange={handleUpload}
           className="hidden"
           id="gallery-upload"

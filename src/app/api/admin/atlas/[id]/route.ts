@@ -1,27 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-function getAuthClient(request: Request) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-
-  const token = request.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-
-  return createClient(url, key, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
-
-function getServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+import { requireAuth, getServiceClient, safeError } from "@/lib/api-helpers";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -29,20 +8,22 @@ interface RouteContext {
 
 /** PATCH /api/admin/atlas/[id] — update a post */
 export async function PATCH(request: Request, context: RouteContext) {
-  const supabase = getAuthClient(request);
-  if (!supabase)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = rateLimit(`admin-atlas-patch:${getClientIp(request)}`, {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (limited) return limited;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
 
   const { id } = await context.params;
   const body = await request.json();
 
   const service = getServiceClient();
+  if (!service)
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+
   const { data, error } = await service
     .from("atlas_posts")
     .update(body)
@@ -50,31 +31,31 @@ export async function PATCH(request: Request, context: RouteContext) {
     .select()
     .single();
 
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return safeError("admin/atlas PATCH", error);
 
   return NextResponse.json(data);
 }
 
 /** DELETE /api/admin/atlas/[id] — delete a post */
 export async function DELETE(request: Request, context: RouteContext) {
-  const supabase = getAuthClient(request);
-  if (!supabase)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const limited = rateLimit(`admin-atlas-del:${getClientIp(request)}`, {
+    limit: 10,
+    windowMs: 60_000,
+  });
+  if (limited) return limited;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireAuth(request);
+  if (auth.error) return auth.error;
 
   const { id } = await context.params;
 
   const service = getServiceClient();
+  if (!service)
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+
   const { error } = await service.from("atlas_posts").delete().eq("id", id);
 
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return safeError("admin/atlas DELETE", error);
 
   return NextResponse.json({ success: true });
 }
