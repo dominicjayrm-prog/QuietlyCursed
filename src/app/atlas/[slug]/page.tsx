@@ -132,13 +132,6 @@ export default async function AtlasPostPage({ params }: PageProps) {
           )}
         </header>
 
-        {/* Video */}
-        {post.youtube_video_id && (
-          <div className="mb-14">
-            <YouTubeEmbed videoId={post.youtube_video_id} title={post.title} />
-          </div>
-        )}
-
         {/* Article Content — JSON (rich editor) or Markdown (legacy) */}
         {hasJsonContent ? (
           <div className="mb-16">
@@ -151,6 +144,16 @@ export default async function AtlasPostPage({ params }: PageProps) {
             <MarkdownContent content={post.content} />
           </div>
         ) : null}
+
+        {/* Video */}
+        {post.youtube_video_id && (
+          <div className="mb-14">
+            <p className="mb-3 text-sm font-medium tracking-wider uppercase text-white/40">
+              Prefer to watch?
+            </p>
+            <YouTubeEmbed videoId={post.youtube_video_id} title={post.title} />
+          </div>
+        )}
 
         {/* Share */}
         <ShareButtons
