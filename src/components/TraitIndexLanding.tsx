@@ -135,7 +135,7 @@ export default function TraitIndexLanding() {
           <p>
             The Trait Index measures survival patterns that most people mistake
             for personality. Fawning, hyper-awareness, emotional containment,
-            chronic self-editing — these are not character traits. They are
+            chronic self-editing. These are not character traits. They are
             trauma responses that became automatic, and this psychological
             patterns test is designed to surface them.
           </p>
@@ -144,7 +144,7 @@ export default function TraitIndexLanding() {
             or over-function in relationships. It identifies people-pleasing
             behaviour not as kindness, but as a learned strategy for managing
             perceived danger. It traces the quiet architecture of identity
-            suppression — the slow process of becoming what others need at the
+            suppression, the slow process of becoming what others need at the
             expense of what you actually are.
           </p>
           <p>
@@ -157,7 +157,7 @@ export default function TraitIndexLanding() {
           <p>
             This is not a self-awareness test that tells you what you want to
             hear. It is an inventory of the strategies you have been running on
-            autopilot — and an invitation to see them clearly for the first
+            autopilot, and an invitation to see them clearly for the first
             time.
           </p>
         </div>
@@ -176,12 +176,12 @@ export default function TraitIndexLanding() {
             it was never really about kindness. Chronic overthinkers who
             monitor every room, read every micro-expression, and carry
             conversations long after they end. People who struggle to set
-            boundaries — not because they don&apos;t know how, but because
+            boundaries, not because they don&apos;t know how, but because
             something deeper won&apos;t let them.
           </p>
           <p>
             This personality test is for anyone who feels disconnected from
-            their authentic self — who senses that the version of them the
+            their authentic self, who senses that the version of them the
             world interacts with is not the full picture. It is for those
             curious about trauma response types, attachment style patterns,
             and the quiet machinery of psychological survival that operates
@@ -229,7 +229,7 @@ export default function TraitIndexLanding() {
               Explore Your Atlas Entry
             </h3>
             <p className="text-sm leading-relaxed text-white/50">
-              Read the full breakdown of your archetype in the Atlas — written
+              Read the full breakdown of your archetype in the Atlas, written
               with clinical depth and zero sugarcoating.
             </p>
           </div>
@@ -335,7 +335,7 @@ export default function TraitIndexLanding() {
             standard personality quiz. Whether you are searching for a people
             pleaser test, an attachment style quiz, or a broader psychological
             quiz that examines the coping strategies operating beneath your
-            everyday behaviour — this assessment was built for that level of
+            everyday behaviour, this assessment was built for that level of
             inquiry. Quietly Cursed exists to document the patterns most people
             live inside without ever naming them.
           </p>
