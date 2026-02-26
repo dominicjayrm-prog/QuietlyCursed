@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireAuth, getServiceClient, safeError } from "@/lib/api-helpers";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
@@ -62,6 +63,8 @@ export async function PATCH(request: Request) {
     .single();
 
   if (error) return safeError("admin/settings PATCH", error);
+
+  revalidatePath("/");
 
   return NextResponse.json(data);
 }

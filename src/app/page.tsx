@@ -1,3 +1,5 @@
+export const revalidate = 60;
+
 import Link from "next/link";
 import EyeGlow from "@/components/EyeGlow";
 import ParallaxSection from "@/components/ParallaxSection";
