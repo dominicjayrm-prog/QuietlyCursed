@@ -5,7 +5,7 @@ import EyeGlow from "@/components/EyeGlow";
 import MascotGallery from "@/components/MascotGallery";
 
 export const metadata: Metadata = buildMetadata({
-  title: "The Watcher — Mascot",
+  title: "The Watcher | Mascot",
   description: mascotLore.tagline,
   path: "/mascot",
 });

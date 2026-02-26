@@ -66,7 +66,7 @@ export default function TraitIndexLanding() {
 
         <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-white/60 md:text-lg">
           Most personality tests sort you into comfortable categories. This one
-          maps the psychological patterns you actually live inside — the roles
+          maps the psychological patterns you actually live inside: the roles
           you play, the defences you run, the identity you&apos;ve built without
           realising it.
         </p>
@@ -111,7 +111,7 @@ export default function TraitIndexLanding() {
             designed to make you feel understood in four letters.
           </p>
           <p>
-            The Trait Index doesn&apos;t sort you — it exposes you. It identifies
+            The Trait Index doesn&apos;t sort you. It exposes you. It identifies
             psychological identity patterns: the roles you unconsciously adopt,
             the survival strategies you mistake for personality, and the internal
             architecture you&apos;ve never had language for.

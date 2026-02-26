@@ -34,7 +34,7 @@ const ARCHETYPE_TEASERS = [
 
 const EMOTIONAL_DRIVERS = [
   "To understand why they always feel responsible for everyone else\u2019s emotions.",
-  "To understand why success never feels like enough — and the next goal starts before the last one lands.",
+  "To understand why success never feels like enough, and the next goal starts before the last one lands.",
   "To understand why they see patterns others miss, but can\u2019t stop watching long enough to act.",
 ];
 
@@ -90,7 +90,7 @@ export default function HomePage() {
             <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-white/60 md:text-lg">
               Not a personality label. Not a type indicator. The Trait Index maps
               the psychological identity pattern you&apos;ve been running your
-              entire life — the role you default to, the defence you don&apos;t
+              entire life: the role you default to, the defence you don&apos;t
               notice, the self you built without choosing it.
             </p>
           </FadeIn>
@@ -172,8 +172,8 @@ export default function HomePage() {
               What is the Atlas?
             </h2>
             <p className="mx-auto max-w-2xl text-base leading-[1.85] text-white/60 md:text-lg">
-              Your brain runs invisible programs — cognitive biases, emotional
-              shortcuts, identity loops — that distort every decision you think
+              Your brain runs invisible programs: cognitive biases, emotional
+              shortcuts, identity loops. They distort every decision you think
               you&apos;re making freely. The Atlas is a structural breakdown of
               each one. Not advice. Not theory. Psychological architecture.
             </p>
@@ -191,7 +191,7 @@ export default function HomePage() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-500/40" />
-                What it protects you from — and what it quietly costs
+                What it protects you from, and what it quietly costs
               </li>
               <li className="flex items-start gap-3">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-500/40" />
