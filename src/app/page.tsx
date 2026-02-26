@@ -233,7 +233,72 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Section 5: FAQ ─── */}
+      {/* ─── Section 5: YouTube Channel ─── */}
+      <section className="border-t border-white/5" aria-label="Quietly Cursed YouTube channel">
+        <div className="mx-auto max-w-3xl px-6 py-20 md:py-24 text-center">
+          <FadeIn>
+            {/* YouTube play icon */}
+            <div className="mx-auto mb-6 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03]">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4 text-cyan-400/70"
+                fill="currentColor"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+            <h2 className="mb-4 text-2xl font-bold tracking-tight text-white md:text-3xl">
+              Watch the Breakdowns
+            </h2>
+          </FadeIn>
+
+          <FadeIn delay={100}>
+            <div className="mx-auto max-w-xl space-y-4 text-base leading-[1.85] text-white/60">
+              <p>
+                Every concept in the Atlas gets a long-form psychological
+                breakdown on the Quietly Cursed YouTube channel. These aren&apos;t
+                surface-level explainers. Each video dissects a specific pattern,
+                survival strategy, identity trap, or cognitive distortion and
+                maps how it operates beneath conscious awareness.
+              </p>
+              <p>
+                If you recognise yourself in the overthinking, the
+                people-pleasing, the emotional suppression, or the constant need
+                to perform, these breakdowns will show you the architecture
+                behind it. The psychology of why you do what you do, explored
+                without hype and without shortcuts.
+              </p>
+              <p className="text-sm text-white/40">
+                New episodes explore trauma responses, social dynamics, attachment
+                patterns, and the invisible programmes shaping your decisions.
+              </p>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={200}>
+            <a
+              href="https://www.youtube.com/@QuietlyCursed"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-10 inline-flex items-center gap-3 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-8 py-3.5 text-sm font-semibold tracking-wider uppercase text-cyan-400 transition-all hover:bg-cyan-500/20 hover:border-cyan-400/50"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="currentColor"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Subscribe on YouTube
+            </a>
+            <p className="mt-6 text-sm font-medium tracking-wider uppercase text-white/30">
+              Watch the latest psychological breakdown below.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ─── Section 6: FAQ ─── */}
       <HomepageFAQ />
     </>
   );
