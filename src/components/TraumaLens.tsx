@@ -9,7 +9,9 @@ import {
   type TraumaLensResult,
   type TraumaResponse,
 } from "@/data/trauma-lens";
+import { type AttachmentLensResult } from "@/data/attachment-lens";
 import { getSupabase } from "@/lib/supabase/client";
+import AttachmentLens from "./AttachmentLens";
 
 interface TraumaLensProps {
   /** The user's primary archetype name, e.g. "The Peacemaker" */
@@ -27,6 +29,8 @@ export default function TraumaLens({
   const [currentQ, setCurrentQ] = useState(0);
   const [result, setResult] = useState<TraumaLensResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [attachmentResult, setAttachmentResult] =
+    useState<AttachmentLensResult | null>(null);
 
   const question = traumaLensQuestions[currentQ];
   const progress = Object.keys(answers).length;
@@ -168,6 +172,20 @@ export default function TraumaLens({
                 {secondary.name}
               </span>
             </div>
+            <div className="flex items-baseline justify-between border-b border-white/5 pb-3">
+              <span className="text-xs tracking-widest uppercase text-white/40">
+                Attachment Leaning
+              </span>
+              {attachmentResult ? (
+                <span className="text-base font-semibold text-rose-400">
+                  {attachmentResult.primary.name}
+                </span>
+              ) : (
+                <span className="text-sm italic text-white/30">
+                  Pending
+                </span>
+              )}
+            </div>
             <div className="flex items-baseline justify-between">
               <span className="text-xs tracking-widest uppercase text-white/40">
                 Cognitive Tendency
@@ -246,36 +264,35 @@ export default function TraumaLens({
           </p>
         </div>
 
-        {/* Future modules placeholder */}
-        <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.01] p-6 text-center">
-          <p className="text-xs tracking-widest uppercase text-white/25">
-            More Lenses Coming Soon
-          </p>
-          <p className="mt-2 text-sm text-white/35">
-            Attachment Lens, Boundary Lens, and Overthinking Lens are in
-            development.
-          </p>
-        </div>
+        {/* Attachment Lens module */}
+        <AttachmentLens
+          primaryArchetype={primaryArchetype}
+          traumaPrimary={primary.name}
+          quizResultId={quizResultId}
+          onComplete={setAttachmentResult}
+        />
 
-        {/* Share + Copy */}
-        <div className="flex flex-col items-center gap-4 pt-4">
-          <button
-            onClick={handleCopy}
-            className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-6 py-3 text-sm font-semibold tracking-wider uppercase text-purple-400 transition-all hover:bg-purple-500/20 hover:border-purple-400/50 cursor-pointer"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+        {/* Share + Copy (only show if attachment not yet completed, since AttachmentLens has its own) */}
+        {!attachmentResult && (
+          <div className="flex flex-col items-center gap-4 pt-4">
+            <button
+              onClick={handleCopy}
+              className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-6 py-3 text-sm font-semibold tracking-wider uppercase text-purple-400 transition-all hover:bg-purple-500/20 hover:border-purple-400/50 cursor-pointer"
             >
-              <rect x="9" y="9" width="13" height="13" rx="2" />
-              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-            </svg>
-            {copied ? "Copied!" : "Copy Identity Map"}
-          </button>
-        </div>
+              <svg
+                viewBox="0 0 24 24"
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" />
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+              </svg>
+              {copied ? "Copied!" : "Copy Identity Map"}
+            </button>
+          </div>
+        )}
       </div>
     );
   }
