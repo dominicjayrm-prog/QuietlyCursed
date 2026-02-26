@@ -3,55 +3,227 @@
 import { useState } from "react";
 import FadeIn from "@/components/FadeIn";
 
+type AnswerBlock =
+  | { type: "text"; content: string }
+  | { type: "bullets"; items: string[] };
+
 interface FAQItem {
   question: string;
-  answer: string;
+  answer: AnswerBlock[];
 }
 
 const FAQ_ITEMS: FAQItem[] = [
   {
     question: "What is the Trait Index personality quiz?",
-    answer:
-      "The Trait Index is a psychologically weighted personality quiz designed to identify which of six identity archetypes runs deepest in your behaviour. Unlike conventional personality tests that sort you into broad categories, the Trait Index focuses on the specific psychological patterns you developed — often unconsciously — as survival strategies. It examines how you relate to control, connection, visibility, and emotional regulation to surface the role you default to under pressure. The quiz takes two to three minutes and requires no sign-up or personal information. Each archetype — The Watcher, The Prototype, The Climber, The Ghost, The Container, and The Peacemaker — represents a distinct coping architecture built around a core emotional need. Your result doesn't tell you who you are. It shows you the pattern you've been running — the one shaping your decisions, relationships, and sense of self before you even notice it's operating.",
+    answer: [
+      {
+        type: "text",
+        content:
+          "The Trait Index is a psychologically weighted personality quiz designed to identify which of six identity archetypes runs deepest in your behaviour. Unlike conventional personality tests that sort you into broad categories, the Trait Index focuses on the specific psychological patterns you developed, often unconsciously, as survival strategies.",
+      },
+      {
+        type: "text",
+        content:
+          "It examines how you relate to control, connection, visibility, and emotional regulation to surface the role you default to under pressure. The quiz takes two to three minutes and requires no sign-up or personal information.",
+      },
+      {
+        type: "text",
+        content:
+          "Each archetype (The Watcher, The Prototype, The Climber, The Ghost, The Container, and The Peacemaker) represents a distinct coping architecture built around a core emotional need. Your result doesn't tell you who you are. It shows you the pattern you've been running, the one shaping your decisions, relationships, and sense of self before you even notice it's operating.",
+      },
+    ],
   },
   {
     question: "Is this a clinical personality test?",
-    answer:
-      "No. The Trait Index is not a clinical diagnostic tool, and it's not designed to replace professional psychological assessment. It's a self-awareness framework — a structured reflection exercise grounded in recognised psychological concepts including attachment patterns, trauma response styles, and identity formation theory. Clinical personality tests like the MMPI or NEO-PI-R are administered and interpreted by licensed professionals within therapeutic settings. The Trait Index operates differently. It's built for people who sense that something is running beneath their conscious decisions — a pattern they can feel but haven't been able to name. The questions are psychologically weighted to surface behavioural tendencies, not to diagnose conditions. Think of it as a mirror with higher resolution than most self-reflection offers. It won't tell you what's wrong with you. It will show you what you built to survive — and what that architecture is quietly costing you now.",
+    answer: [
+      {
+        type: "text",
+        content:
+          "No. The Trait Index is not a clinical diagnostic tool, and it's not designed to replace professional psychological assessment. It's a self-awareness framework; a structured reflection exercise grounded in recognised psychological concepts including attachment patterns, trauma response styles, and identity formation theory.",
+      },
+      {
+        type: "text",
+        content:
+          "Clinical personality tests like the MMPI or NEO-PI-R are administered and interpreted by licensed professionals within therapeutic settings. The Trait Index operates differently. It's built for people who sense that something is running beneath their conscious decisions. A pattern they can feel but haven't been able to name.",
+      },
+      {
+        type: "text",
+        content:
+          "The questions are psychologically weighted to surface behavioural tendencies, not to diagnose conditions. Think of it as a mirror with higher resolution than most self-reflection offers. It won't tell you what's wrong with you. It will show you what you built to survive, and what that architecture is quietly costing you now.",
+      },
+    ],
   },
   {
     question: "What is the fawn response in psychology?",
-    answer:
-      "The fawn response is a trauma response characterised by compulsive people-pleasing, excessive agreeableness, and the automatic suppression of your own needs in favour of others'. While most people are familiar with fight, flight, and freeze, fawning is the fourth survival strategy — and arguably the hardest to detect because it looks like kindness. In practice, the fawn response means you instinctively read what others need and shape yourself around it. You avoid conflict not because you're peaceful, but because disagreement feels existentially unsafe. You may struggle with setting boundaries, feel responsible for other people's emotional states, or lose track of your own preferences entirely. The fawn response typically develops in environments where emotional safety depended on keeping someone else calm or pleased. Over time, it stops being something you do and becomes something you are. Recognising it is the first step toward distinguishing genuine empathy from automatic self-erasure.",
+    answer: [
+      {
+        type: "text",
+        content:
+          "The fawn response is a trauma response characterised by compulsive people-pleasing, excessive agreeableness, and the automatic suppression of your own needs in favour of others'. While most people are familiar with fight, flight, and freeze, fawning is the fourth survival strategy, and arguably the hardest to detect because it looks like kindness.",
+      },
+      {
+        type: "text",
+        content:
+          "In practice, the fawn response means you instinctively read what others need and shape yourself around it. You avoid conflict not because you're peaceful, but because disagreement feels existentially unsafe. You may struggle with setting boundaries, feel responsible for other people's emotional states, or lose track of your own preferences entirely.",
+      },
+      {
+        type: "text",
+        content:
+          "The fawn response typically develops in environments where emotional safety depended on keeping someone else calm or pleased. Over time, it stops being something you do and becomes something you are. Recognising it is the first step toward distinguishing genuine empathy from automatic self-erasure.",
+      },
+    ],
   },
   {
     question: "What are signs you might be a people pleaser?",
-    answer:
-      "People-pleasing goes far beyond being kind or considerate — it's a psychological pattern where your sense of safety, identity, or worth becomes dependent on how others perceive you. Common signs include difficulty saying no even when you want to, chronic over-apologising, anxiety about how others feel after interactions, and a persistent sense that your own needs are less valid than everyone else's. You might rehearse conversations to avoid upsetting people, suppress your real opinions to maintain harmony, or feel drained after socialising because you spent the entire time managing someone else's emotional experience. People-pleasing is often rooted in early attachment patterns where love or safety was conditional — given when you performed well, withdrawn when you didn't. It's a coping mechanism that once served a real purpose. But in adulthood it becomes a trap: the more you accommodate, the less visible your actual self becomes — even to you.",
+    answer: [
+      {
+        type: "text",
+        content:
+          "People-pleasing goes far beyond being kind or considerate. It's a psychological pattern where your sense of safety, identity, or worth becomes dependent on how others perceive you.",
+      },
+      {
+        type: "text",
+        content: "Common signs include:",
+      },
+      {
+        type: "bullets",
+        items: [
+          "Difficulty saying no, even when you genuinely want to",
+          "Chronic over-apologising or preemptive guilt",
+          "Anxiety about how others feel after interactions with you",
+          "A persistent sense that your own needs are less valid than everyone else's",
+          "Rehearsing conversations to avoid upsetting people",
+          "Feeling drained after socialising because you spent the entire time managing someone else's emotional experience",
+        ],
+      },
+      {
+        type: "text",
+        content:
+          "People-pleasing is often rooted in early attachment patterns where love or safety was conditional. Given when you performed well; withdrawn when you didn't. It's a coping mechanism that once served a real purpose, but in adulthood it becomes a trap: the more you accommodate, the less visible your actual self becomes.",
+      },
+    ],
   },
   {
     question: "Why do some people struggle with setting boundaries?",
-    answer:
-      "Boundary difficulty rarely comes from not understanding what boundaries are. Most people who struggle with setting boundaries understand the concept perfectly — they just can't execute it without overwhelming guilt, anxiety, or fear of abandonment. That's because boundaries aren't primarily an intellectual skill. They're an emotional one, and they require tolerating the discomfort of someone else's displeasure. For many people, that discomfort links directly to early survival strategies. If you grew up in an environment where asserting your needs caused conflict, withdrawal, or punishment, your nervous system learned that boundaries equal danger. The fawn response is heavily implicated here — it trains you to prioritise others' comfort as a form of self-protection. Overthinking every interaction, replaying conversations, and preemptively adjusting your behaviour are all symptoms of a system that learned it wasn't safe to take up space. Real boundary work isn't about scripts or assertiveness techniques. It's about rewiring the belief that your needs are an inconvenience.",
+    answer: [
+      {
+        type: "text",
+        content:
+          "Boundary difficulty rarely comes from not understanding what boundaries are. Most people who struggle with setting boundaries understand the concept perfectly; they just can't execute it without overwhelming guilt, anxiety, or fear of abandonment.",
+      },
+      {
+        type: "text",
+        content:
+          "That's because boundaries aren't primarily an intellectual skill. They're an emotional one, and they require tolerating the discomfort of someone else's displeasure. For many people, that discomfort links directly to early survival strategies. If you grew up in an environment where asserting your needs caused conflict, withdrawal, or punishment, your nervous system learned that boundaries equal danger.",
+      },
+      {
+        type: "text",
+        content:
+          "The fawn response is heavily implicated here. It trains you to prioritise others' comfort as a form of self-protection. Overthinking every interaction, replaying conversations, and preemptively adjusting your behaviour are all symptoms of a system that learned it wasn't safe to take up space.",
+      },
+      {
+        type: "text",
+        content:
+          "Real boundary work isn't about scripts or assertiveness techniques. It's about rewiring the belief that your needs are an inconvenience.",
+      },
+    ],
   },
   {
     question: "What are the four trauma response types?",
-    answer:
-      "The four primary trauma responses are fight, flight, freeze, and fawn. Each represents a distinct survival strategy your nervous system developed in response to perceived threat. Fight manifests as anger, control, confrontation, or the need to dominate situations. Flight shows up as overworking, overthinking, perfectionism, or staying perpetually busy to avoid sitting with discomfort. Freeze looks like emotional shutdown, dissociation, numbness, or an inability to make decisions under stress. Fawn — the least discussed but extremely common — presents as people-pleasing, conflict avoidance, and compulsive agreeableness. Most people don't operate from just one response. You likely have a dominant pattern with secondary tendencies that shift depending on context. These aren't conscious choices — they're automatic programmes running beneath awareness. What feels like personality is often your nervous system's preferred defence. Identifying your dominant trauma response is the starting point for understanding why you react the way you do in relationships, conflict, and moments of vulnerability.",
+    answer: [
+      {
+        type: "text",
+        content:
+          "The four primary trauma responses are fight, flight, freeze, and fawn. Each represents a distinct survival strategy your nervous system developed in response to perceived threat.",
+      },
+      {
+        type: "bullets",
+        items: [
+          "Fight: anger, control, confrontation, or the need to dominate situations",
+          "Flight: overworking, overthinking, perfectionism, or staying perpetually busy to avoid discomfort",
+          "Freeze: emotional shutdown, dissociation, numbness, or inability to make decisions under stress",
+          "Fawn: people-pleasing, conflict avoidance, and compulsive agreeableness (the least discussed, but extremely common)",
+        ],
+      },
+      {
+        type: "text",
+        content:
+          "Most people don't operate from just one response. You likely have a dominant pattern with secondary tendencies that shift depending on context. These aren't conscious choices; they're automatic programmes running beneath awareness.",
+      },
+      {
+        type: "text",
+        content:
+          "What feels like personality is often your nervous system's preferred defence. Identifying your dominant trauma response is the starting point for understanding why you react the way you do in relationships, conflict, and moments of vulnerability.",
+      },
+    ],
   },
   {
     question: "Can emotional suppression affect your relationships?",
-    answer:
-      "Profoundly. Emotional suppression — the habitual dampening or concealment of what you actually feel — doesn't make emotions disappear. It redirects them. Suppressed feelings surface as irritability, emotional withdrawal, physical tension, or sudden disproportionate reactions to minor events. In relationships, emotional suppression creates a specific kind of distance. Your partner or close connections sense something is withheld but can't reach it. You may appear calm, composed, even stable — while internally tracking every emotional signal without revealing your own. Over time, this pattern erodes intimacy because real connection requires emotional visibility. If you learned early that expressing vulnerability was unsafe, weak, or burdensome, suppression became your default coping mechanism. It protected you then. But in adult relationships, it means the person closest to you is bonding with a managed version of who you are — not the actual one. Recognising emotional suppression is where you start understanding why relationships may feel close in proximity but distant in depth.",
+    answer: [
+      {
+        type: "text",
+        content:
+          "Profoundly. Emotional suppression, the habitual dampening or concealment of what you actually feel, doesn't make emotions disappear. It redirects them. Suppressed feelings surface as irritability, emotional withdrawal, physical tension, or sudden disproportionate reactions to minor events.",
+      },
+      {
+        type: "text",
+        content:
+          "In relationships, emotional suppression creates a specific kind of distance. Your partner or close connections sense something is withheld but can't reach it. You may appear calm, composed, even stable, while internally tracking every emotional signal without revealing your own.",
+      },
+      {
+        type: "text",
+        content:
+          "Over time, this pattern erodes intimacy because real connection requires emotional visibility. If you learned early that expressing vulnerability was unsafe, weak, or burdensome, suppression became your default coping mechanism. It protected you then. But in adult relationships, it means the person closest to you is bonding with a managed version of who you are, not the actual one.",
+      },
+      {
+        type: "text",
+        content:
+          "Recognising emotional suppression is where you start understanding why relationships may feel close in proximity but distant in depth.",
+      },
+    ],
   },
   {
     question: "How does self-awareness actually change behaviour?",
-    answer:
-      "Self-awareness alone doesn't change behaviour — but it changes the relationship you have with your behaviour, which is where transformation begins. Most psychological patterns operate automatically. You react, then rationalise. You repeat cycles and only recognise them in retrospect. Self-awareness introduces a gap between stimulus and response — a moment where you can observe the pattern before it completes. This is particularly relevant for deeply embedded coping mechanisms like people-pleasing, emotional suppression, or identity confusion, where the behaviour feels so natural it seems like personality rather than programming. The Trait Index and the Atlas are designed to accelerate this process by naming the architecture you're running. When you can identify that you're defaulting to a fawn response or retreating into strategic absence, you gain something powerful: choice. Not instant change — but the capacity to interrupt automatic patterns. Over time, that interruption compounds. Self-awareness doesn't fix you. It gives you the option to stop operating on autopilot.",
+    answer: [
+      {
+        type: "text",
+        content:
+          "Self-awareness alone doesn't change behaviour, but it changes the relationship you have with your behaviour. That's where transformation begins.",
+      },
+      {
+        type: "text",
+        content:
+          "Most psychological patterns operate automatically. You react, then rationalise. You repeat cycles and only recognise them in retrospect. Self-awareness introduces a gap between stimulus and response; a moment where you can observe the pattern before it completes.",
+      },
+      {
+        type: "text",
+        content:
+          "This is particularly relevant for deeply embedded coping mechanisms like people-pleasing, emotional suppression, or identity confusion, where the behaviour feels so natural it seems like personality rather than programming.",
+      },
+      {
+        type: "text",
+        content:
+          "The Trait Index and the Atlas are designed to accelerate this process by naming the architecture you're running. When you can identify that you're defaulting to a fawn response or retreating into strategic absence, you gain something powerful: choice. Not instant change, but the capacity to interrupt automatic patterns. Over time, that interruption compounds.",
+      },
+      {
+        type: "text",
+        content:
+          "Self-awareness doesn't fix you. It gives you the option to stop operating on autopilot.",
+      },
+    ],
   },
 ];
 
-function FAQItem({
+/** Flatten answer blocks to plain text for JSON-LD structured data. */
+function flattenAnswer(blocks: AnswerBlock[]): string {
+  return blocks
+    .map((b) =>
+      b.type === "text" ? b.content : b.items.map((i) => `• ${i}`).join(" "),
+    )
+    .join(" ");
+}
+
+function FAQItemCard({
   item,
   isOpen,
   onToggle,
@@ -67,7 +239,7 @@ function FAQItem({
         className="flex w-full items-center justify-between gap-4 py-5 text-left transition-colors hover:text-cyan-400"
         aria-expanded={isOpen}
       >
-        <span className="text-sm font-medium text-white/80 transition-colors group-hover:text-cyan-400 md:text-base">
+        <span className="text-sm font-medium text-white/80 md:text-base">
           {item.question}
         </span>
         <span
@@ -94,11 +266,36 @@ function FAQItem({
       </button>
       <div
         className={`grid transition-all duration-300 ease-in-out ${
-          isOpen ? "grid-rows-[1fr] opacity-100 pb-6" : "grid-rows-[0fr] opacity-0"
+          isOpen
+            ? "grid-rows-[1fr] opacity-100 pb-6"
+            : "grid-rows-[0fr] opacity-0"
         }`}
       >
         <div className="overflow-hidden">
-          <p className="text-sm leading-[1.85] text-white/50">{item.answer}</p>
+          <div className="space-y-3">
+            {item.answer.map((block, i) =>
+              block.type === "text" ? (
+                <p
+                  key={i}
+                  className="text-sm leading-[1.85] text-white/50"
+                >
+                  {block.content}
+                </p>
+              ) : (
+                <ul
+                  key={i}
+                  className="ml-1 space-y-1.5 text-sm leading-[1.85] text-white/50"
+                >
+                  {block.items.map((item, j) => (
+                    <li key={j} className="flex items-start gap-2.5">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-500/40" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ),
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -126,7 +323,7 @@ export default function HomepageFAQ() {
               name: item.question,
               acceptedAnswer: {
                 "@type": "Answer",
-                text: item.answer,
+                text: flattenAnswer(item.answer),
               },
             })),
           }),
@@ -151,7 +348,7 @@ export default function HomepageFAQ() {
           <FadeIn delay={100}>
             <div className="rounded-2xl border border-white/5 bg-white/[0.02] px-6 md:px-8">
               {FAQ_ITEMS.map((item, i) => (
-                <FAQItem
+                <FAQItemCard
                   key={i}
                   item={item}
                   isOpen={openIndex === i}
