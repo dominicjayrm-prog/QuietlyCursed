@@ -3,6 +3,7 @@ import EyeGlow from "@/components/EyeGlow";
 import ParallaxSection from "@/components/ParallaxSection";
 import BrainIcon from "@/components/BrainIcon";
 import FadeIn from "@/components/FadeIn";
+import HomepageFAQ from "@/components/HomepageFAQ";
 
 const ARCHETYPE_TEASERS = [
   {
@@ -231,6 +232,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ─── Section 5: FAQ ─── */}
+      <HomepageFAQ />
     </>
   );
 }
