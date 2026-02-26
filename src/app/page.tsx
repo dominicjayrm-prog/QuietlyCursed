@@ -4,6 +4,8 @@ import ParallaxSection from "@/components/ParallaxSection";
 import BrainIcon from "@/components/BrainIcon";
 import FadeIn from "@/components/FadeIn";
 import HomepageFAQ from "@/components/HomepageFAQ";
+import { getFeaturedVideoUrl } from "@/lib/settings";
+import { extractYouTubeId } from "@/lib/atlas";
 
 const ARCHETYPE_TEASERS = [
   {
@@ -38,7 +40,10 @@ const EMOTIONAL_DRIVERS = [
   "To understand why they see patterns others miss, but can\u2019t stop watching long enough to act.",
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const featuredVideoUrl = await getFeaturedVideoUrl();
+  const featuredVideoId = featuredVideoUrl ? extractYouTubeId(featuredVideoUrl) : null;
+
   return (
     <>
       {/* ─── Hero ─── */}
@@ -291,10 +296,29 @@ export default function HomePage() {
               </svg>
               Subscribe on YouTube
             </a>
-            <p className="mt-6 text-sm font-medium tracking-wider uppercase text-white/30">
-              Watch the latest psychological breakdown below.
-            </p>
+            {featuredVideoId && (
+              <p className="mt-6 text-sm font-medium tracking-wider uppercase text-white/30">
+                Watch the latest psychological breakdown below.
+              </p>
+            )}
           </FadeIn>
+
+          {/* Embedded featured video (set via admin Settings tab) */}
+          {featuredVideoId && (
+            <FadeIn delay={300}>
+              <div className="mx-auto mt-10 max-w-2xl overflow-hidden rounded-xl border border-white/10">
+                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                  <iframe
+                    src={`https://www.youtube-nocookie.com/embed/${featuredVideoId}`}
+                    title="Latest Quietly Cursed video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 h-full w-full"
+                  />
+                </div>
+              </div>
+            </FadeIn>
+          )}
         </div>
       </section>
 

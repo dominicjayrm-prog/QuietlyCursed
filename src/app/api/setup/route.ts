@@ -45,6 +45,15 @@ CREATE TABLE IF NOT EXISTS email_subscribers (
 ALTER TABLE email_subscribers ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN CREATE POLICY "Admins can read subscribers" ON email_subscribers FOR SELECT USING (auth.role() = 'authenticated'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE POLICY "Anyone can subscribe" ON email_subscribers FOR INSERT WITH CHECK (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- Site settings (key-value)
+CREATE TABLE IF NOT EXISTS site_settings (
+  key text PRIMARY KEY,
+  value text NOT NULL,
+  updated_at timestamptz DEFAULT now()
+);
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN CREATE POLICY "Public can read site settings" ON site_settings FOR SELECT USING (true); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY "Authenticated users can manage site settings" ON site_settings FOR ALL USING (auth.role() = 'authenticated'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 `;
 
 /** GET /api/setup — check if atlas_posts table exists */
@@ -262,12 +271,36 @@ export async function POST(request: Request) {
       END $$
     `;
 
+    // ─── site_settings table (key-value config) ────
+    await sql`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        key text PRIMARY KEY,
+        value text NOT NULL,
+        updated_at timestamptz DEFAULT now()
+      )
+    `;
+    await sql`ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY`;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Public can read site settings"
+          ON site_settings FOR SELECT USING (true);
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+    await sql`
+      DO $$ BEGIN
+        CREATE POLICY "Authenticated users can manage site settings"
+          ON site_settings FOR ALL USING (auth.role() = 'authenticated');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `;
+
     await sql.end();
 
     return NextResponse.json({
       status: "ok",
       message:
-        "Migration completed. atlas_posts, email_subscribers, page_views, and sessions tables created with RLS.",
+        "Migration completed. atlas_posts, email_subscribers, page_views, sessions, and site_settings tables created with RLS.",
     });
   } catch (e) {
     await sql.end().catch(() => {});
