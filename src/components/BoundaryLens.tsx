@@ -2,43 +2,40 @@
 
 import { useState } from "react";
 import {
-  attachmentLensQuestions,
-  scoreAttachmentLens,
-  getAttachmentLensResult,
-  buildAttachmentShareText,
-  ATTACHMENT_DISPLAY_NAMES,
-  type AttachmentLensResult,
-  type AttachmentLeaning,
-} from "@/data/attachment-lens";
-import { type BoundaryLensResult } from "@/data/boundary-lens";
+  boundaryLensQuestions,
+  scoreBoundaryLens,
+  getBoundaryLensResult,
+  BOUNDARY_DISPLAY_NAMES,
+  type BoundaryLensResult,
+  type BoundaryPattern,
+} from "@/data/boundary-lens";
 import { type CognitiveLensResult } from "@/data/cognitive-lens";
 import { getSupabase } from "@/lib/supabase/client";
-import BoundaryLens from "./BoundaryLens";
+import CognitiveLens from "./CognitiveLens";
 
-interface AttachmentLensProps {
+interface BoundaryLensProps {
   primaryArchetype: string;
   traumaPrimary: string;
+  attachmentPrimary: string;
   quizResultId?: string;
-  onComplete?: (result: AttachmentLensResult) => void;
-  onBoundaryComplete?: (result: BoundaryLensResult) => void;
+  onComplete?: (result: BoundaryLensResult) => void;
   onCognitiveComplete?: (result: CognitiveLensResult) => void;
 }
 
-export default function AttachmentLens({
+export default function BoundaryLens({
   primaryArchetype,
   traumaPrimary,
+  attachmentPrimary,
   quizResultId,
   onComplete,
-  onBoundaryComplete,
   onCognitiveComplete,
-}: AttachmentLensProps) {
+}: BoundaryLensProps) {
   const [started, setStarted] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [currentQ, setCurrentQ] = useState(0);
-  const [result, setResult] = useState<AttachmentLensResult | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [result, setResult] = useState<BoundaryLensResult | null>(null);
 
-  const question = attachmentLensQuestions[currentQ];
+  const question = boundaryLensQuestions[currentQ];
   const progress = Object.keys(answers).length;
   const isAnswered = answers[question?.id] !== undefined;
 
@@ -47,7 +44,7 @@ export default function AttachmentLens({
   }
 
   function handleNext() {
-    if (currentQ < attachmentLensQuestions.length - 1) {
+    if (currentQ < boundaryLensQuestions.length - 1) {
       setCurrentQ((prev) => prev + 1);
     }
   }
@@ -59,19 +56,18 @@ export default function AttachmentLens({
   }
 
   function handleSubmit() {
-    const scores = scoreAttachmentLens(answers);
-    const lensResult = getAttachmentLensResult(scores);
+    const scores = scoreBoundaryLens(answers);
+    const lensResult = getBoundaryLensResult(scores);
     setResult(lensResult);
     onComplete?.(lensResult);
 
-    // Store module result (fire-and-forget)
     const supabase = getSupabase();
     if (supabase) {
       supabase
         .from("assessment_modules")
         .insert({
           quiz_result_id: quizResultId || null,
-          module_type: "attachment_lens",
+          module_type: "boundary_lens",
           primary_result: lensResult.primary.id,
           secondary_result: lensResult.secondary.id,
           scores: lensResult.scores,
@@ -80,50 +76,26 @@ export default function AttachmentLens({
     }
   }
 
-  async function handleCopy() {
-    if (!result) return;
-    const text = buildAttachmentShareText(
-      primaryArchetype,
-      traumaPrimary,
-      result.primary,
-      result.secondary
-    );
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  }
-
-  // ─── Prompt state (not yet started) ───
+  // ─── Prompt state ───
   if (!started) {
     return (
-      <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.04] p-6 md:p-10 text-center">
-        <p className="mb-2 text-xs tracking-widest uppercase text-rose-400/60">
-          Relational Module
+      <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.04] p-6 md:p-10 text-center">
+        <p className="mb-2 text-xs tracking-widest uppercase text-amber-400/60">
+          Behavioural Module
         </p>
         <h3 className="mb-3 text-2xl font-bold text-white md:text-3xl">
-          Explore Your Relational Attachment Pattern
+          Explore Your Boundary Pattern
         </h3>
         <p className="mx-auto mb-6 max-w-lg text-sm leading-relaxed text-white/50">
-          Your trauma response describes how your nervous system reacts. This
-          maps how it connects. Six questions about relational patterns,
-          emotional distance, and the way you hold or release closeness.
+          Your attachment describes how you connect. This maps how you
+          protect yourself within those connections. Six questions about
+          saying no, guilt, compliance, and where your limits actually hold.
         </p>
         <button
           onClick={() => setStarted(true)}
-          className="inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-8 py-4 text-sm font-semibold tracking-wider uppercase text-rose-400 transition-all hover:bg-rose-500/20 hover:border-rose-400/50 cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-8 py-4 text-sm font-semibold tracking-wider uppercase text-amber-400 transition-all hover:bg-amber-500/20 hover:border-amber-400/50 cursor-pointer"
         >
-          Start Attachment Lens
+          Start Boundary Lens
         </button>
       </div>
     );
@@ -134,28 +106,28 @@ export default function AttachmentLens({
     const { primary, secondary, scores } = result;
     const maxScore = Math.max(...Object.values(scores), 1);
 
-    const LEANING_COLOURS: Record<AttachmentLeaning, string> = {
-      anxious: "from-rose-500/60 to-rose-400/80",
-      avoidant: "from-slate-500/60 to-slate-400/80",
-      secure_guarded: "from-emerald-500/60 to-emerald-400/80",
-      hyper_independent: "from-amber-500/60 to-amber-400/80",
-      mixed: "from-violet-500/60 to-violet-400/80",
+    const PATTERN_COLOURS: Record<BoundaryPattern, string> = {
+      passive_compliance: "from-amber-500/60 to-amber-400/80",
+      guilt_collapse: "from-orange-500/60 to-orange-400/80",
+      assertive_anxious: "from-yellow-500/60 to-yellow-400/80",
+      healthy_selective: "from-emerald-500/60 to-emerald-400/80",
+      conflict_avoidant: "from-slate-500/60 to-slate-400/80",
     };
 
-    const LABEL_COLOURS: Record<AttachmentLeaning, string> = {
-      anxious: "text-rose-400/60",
-      avoidant: "text-slate-400/60",
-      secure_guarded: "text-emerald-400/60",
-      hyper_independent: "text-amber-400/60",
-      mixed: "text-violet-400/60",
+    const LABEL_COLOURS: Record<BoundaryPattern, string> = {
+      passive_compliance: "text-amber-400/60",
+      guilt_collapse: "text-orange-400/60",
+      assertive_anxious: "text-yellow-400/60",
+      healthy_selective: "text-emerald-400/60",
+      conflict_avoidant: "text-slate-400/60",
     };
 
     return (
       <div className="space-y-10 animate-fade-in-up">
         {/* Primary result */}
-        <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.04] p-6 md:p-10">
-          <p className="mb-2 text-xs tracking-widest uppercase text-rose-400/60">
-            Primary Attachment Leaning
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.04] p-6 md:p-10">
+          <p className="mb-2 text-xs tracking-widest uppercase text-amber-400/60">
+            Primary Boundary Pattern
           </p>
           <h3 className="mb-1 text-2xl font-bold text-white md:text-3xl">
             {primary.name}: {primary.title}
@@ -168,7 +140,7 @@ export default function AttachmentLens({
         {/* Secondary result */}
         <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 md:p-8">
           <p className="mb-2 text-xs tracking-widest uppercase text-white/40">
-            Secondary Attachment Tendency
+            Secondary Boundary Tendency
           </p>
           <h3 className="mb-1 text-xl font-bold text-white/80">
             {secondary.name}: {secondary.title}
@@ -181,21 +153,19 @@ export default function AttachmentLens({
         {/* Score breakdown */}
         <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 md:p-8">
           <h3 className="mb-6 text-sm font-semibold tracking-wider uppercase text-white/40">
-            Attachment Pattern Breakdown
+            Boundary Pattern Breakdown
           </h3>
           <div className="space-y-4">
-            {(Object.entries(scores) as [AttachmentLeaning, number][])
+            {(Object.entries(scores) as [BoundaryPattern, number][])
               .sort(([, a], [, b]) => b - a)
               .map(([id, score]) => (
                 <div key={id} className="flex items-center gap-4">
-                  <span
-                    className={`w-32 text-sm ${LABEL_COLOURS[id]}`}
-                  >
-                    {ATTACHMENT_DISPLAY_NAMES[id]}
+                  <span className={`w-32 text-sm ${LABEL_COLOURS[id]}`}>
+                    {BOUNDARY_DISPLAY_NAMES[id]}
                   </span>
                   <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
                     <div
-                      className={`h-full rounded-full bg-gradient-to-r ${LEANING_COLOURS[id]} transition-all duration-700`}
+                      className={`h-full rounded-full bg-gradient-to-r ${PATTERN_COLOURS[id]} transition-all duration-700`}
                       style={{ width: `${(score / maxScore) * 100}%` }}
                     />
                   </div>
@@ -207,28 +177,28 @@ export default function AttachmentLens({
           </div>
         </div>
 
-        {/* SEO-relevant contextual paragraph */}
+        {/* SEO paragraph */}
         <div className="text-center text-sm leading-[1.85] text-white/35">
           <p>
-            The Attachment Lens maps relational patterns that shape how you
-            bond, withdraw, and navigate emotional closeness. Anxious
-            attachment, avoidant attachment, and hyper-independence are not
-            personality flaws. They are relational coping strategies that
-            developed in response to early and ongoing interpersonal
-            experience. Understanding your attachment patterns alongside your
-            trauma response type and archetype creates a layered psychological
-            profile that moves beyond surface-level personality labels.
+            The Boundary Lens identifies the patterns that govern how you
+            protect your time, energy, and emotional space. People pleaser
+            behaviour, boundary issues, and the inability to say no are not
+            character flaws. They are learned responses to environments where
+            self-sacrifice was rewarded and refusal carried consequences.
+            Understanding your boundary pattern alongside your attachment
+            leaning and trauma response creates a more honest picture of how
+            your coping mechanism patterns interact in everyday life.
           </p>
         </div>
 
-        {/* Boundary Lens module */}
-        <BoundaryLens
+        {/* Cognitive Lens (next module) */}
+        <CognitiveLens
           primaryArchetype={primaryArchetype}
           traumaPrimary={traumaPrimary}
-          attachmentPrimary={primary.name}
+          attachmentPrimary={attachmentPrimary}
+          boundaryPrimary={primary.name}
           quizResultId={quizResultId}
-          onComplete={onBoundaryComplete}
-          onCognitiveComplete={onCognitiveComplete}
+          onComplete={onCognitiveComplete}
         />
       </div>
     );
@@ -237,12 +207,11 @@ export default function AttachmentLens({
   // ─── Quiz state ───
   return (
     <div className="space-y-8 animate-fade-in-up">
-      {/* Progress */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs text-white/50">
           <span aria-live="polite">
-            Attachment Lens: Question {currentQ + 1} of{" "}
-            {attachmentLensQuestions.length}
+            Boundary Lens: Question {currentQ + 1} of{" "}
+            {boundaryLensQuestions.length}
           </span>
           <span>{progress} answered</span>
         </div>
@@ -251,19 +220,18 @@ export default function AttachmentLens({
           role="progressbar"
           aria-valuenow={progress}
           aria-valuemin={0}
-          aria-valuemax={attachmentLensQuestions.length}
-          aria-label={`Attachment Lens progress: ${progress} of ${attachmentLensQuestions.length} questions answered`}
+          aria-valuemax={boundaryLensQuestions.length}
+          aria-label={`Boundary Lens progress: ${progress} of ${boundaryLensQuestions.length} questions answered`}
         >
           <div
-            className="h-full rounded-full bg-gradient-to-r from-rose-500/50 to-rose-400/70 transition-all duration-500"
+            className="h-full rounded-full bg-gradient-to-r from-amber-500/50 to-amber-400/70 transition-all duration-500"
             style={{
-              width: `${(progress / attachmentLensQuestions.length) * 100}%`,
+              width: `${(progress / boundaryLensQuestions.length) * 100}%`,
             }}
           />
         </div>
       </div>
 
-      {/* Question card */}
       <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 md:p-10">
         <p className="mb-8 text-lg leading-relaxed text-white/80 md:text-xl">
           {question.text}
@@ -280,7 +248,7 @@ export default function AttachmentLens({
                 aria-checked={isSelected}
                 className={`flex w-full items-center gap-4 rounded-xl border px-5 py-3.5 text-left text-sm transition-all cursor-pointer ${
                   isSelected
-                    ? "border-rose-500/40 bg-rose-500/10 text-rose-400"
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
                     : "border-white/5 bg-white/[0.01] text-white/50 hover:border-white/10 hover:bg-white/[0.03]"
                 }`}
               >
@@ -288,7 +256,7 @@ export default function AttachmentLens({
                   aria-hidden="true"
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                     isSelected
-                      ? "border-rose-400 bg-rose-400"
+                      ? "border-amber-400 bg-amber-400"
                       : "border-white/20"
                   }`}
                 >
@@ -303,7 +271,6 @@ export default function AttachmentLens({
         </div>
       </div>
 
-      {/* Navigation */}
       <div className="flex items-center justify-between">
         <button
           onClick={handleBack}
@@ -313,19 +280,19 @@ export default function AttachmentLens({
           &larr; Back
         </button>
 
-        {currentQ === attachmentLensQuestions.length - 1 ? (
+        {currentQ === boundaryLensQuestions.length - 1 ? (
           <button
             onClick={handleSubmit}
-            disabled={progress < attachmentLensQuestions.length}
-            className="inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-6 py-3 text-sm font-semibold tracking-wider uppercase text-rose-400 transition-all hover:bg-rose-500/20 hover:border-rose-400/50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            disabled={progress < boundaryLensQuestions.length}
+            className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-6 py-3 text-sm font-semibold tracking-wider uppercase text-amber-400 transition-all hover:bg-amber-500/20 hover:border-amber-400/50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
           >
-            See Attachment Pattern
+            See Boundary Pattern
           </button>
         ) : (
           <button
             onClick={handleNext}
             disabled={!isAnswered}
-            className="text-sm text-rose-400/70 transition-colors hover:text-rose-400 disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+            className="text-sm text-amber-400/70 transition-colors hover:text-amber-400 disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
           >
             Next &rarr;
           </button>
