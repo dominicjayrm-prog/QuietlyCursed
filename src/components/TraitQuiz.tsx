@@ -14,6 +14,7 @@ import { getSupabase } from "@/lib/supabase/client";
 import TrapCard from "./TrapCard";
 import YouTubeEmbed from "./YouTubeEmbed";
 import BrainIcon from "./BrainIcon";
+import TraumaLens from "./TraumaLens";
 
 type Answers = Record<number, number | string>;
 
@@ -34,6 +35,7 @@ export default function TraitQuiz() {
     scores: Record<Archetype, number>;
   } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [quizResultId, setQuizResultId] = useState<string | undefined>();
 
   const question = questions[currentQ];
   const progress = Object.keys(answers).length;
@@ -68,7 +70,7 @@ export default function TraitQuiz() {
       scores,
     });
 
-    // Track quiz completion (fire-and-forget)
+    // Track quiz completion and capture result ID for module linking
     const supabase = getSupabase();
     if (supabase) {
       supabase
@@ -78,7 +80,11 @@ export default function TraitQuiz() {
           secondary_archetype: ranked[1].id,
           scores,
         })
-        .then(() => {});
+        .select("id")
+        .single()
+        .then(({ data }: { data: { id: string } | null }) => {
+          if (data?.id) setQuizResultId(data.id);
+        });
     }
   }
 
@@ -226,6 +232,12 @@ export default function TraitQuiz() {
             </div>
           </div>
         )}
+
+        {/* Trauma Response Lens module */}
+        <TraumaLens
+          primaryArchetype={primary.name}
+          quizResultId={quizResultId}
+        />
 
         {/* Share + Retake */}
         <div className="flex flex-col items-center gap-4 border-t border-white/5 pt-10">
