@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   questions,
   scoreQuiz,
@@ -9,12 +9,11 @@ import {
   type Archetype,
   type ArchetypeProfile,
 } from "@/data/trait-index";
-import { getTrapBySlug } from "@/data/traps";
 import { getSupabase } from "@/lib/supabase/client";
-import TrapCard from "./TrapCard";
 import YouTubeEmbed from "./YouTubeEmbed";
 import BrainIcon from "./BrainIcon";
 import TraumaLens from "./TraumaLens";
+import Link from "next/link";
 
 type Answers = Record<number, number | string>;
 
@@ -36,6 +35,25 @@ export default function TraitQuiz() {
   } | null>(null);
   const [copied, setCopied] = useState(false);
   const [quizResultId, setQuizResultId] = useState<string | undefined>();
+  const [atlasPosts, setAtlasPosts] = useState<
+    { slug: string; title: string; subtitle: string | null; created_at: string }[]
+  >([]);
+
+  // Fetch published Atlas posts for recommendations when results are shown
+  useEffect(() => {
+    if (!results) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+    supabase
+      .from("atlas_posts")
+      .select("slug, title, subtitle, created_at")
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .limit(3)
+      .then(({ data }: { data: { slug: string; title: string; subtitle: string | null; created_at: string }[] | null }) => {
+        if (data) setAtlasPosts(data);
+      });
+  }, [results]);
 
   const question = questions[currentQ];
   const progress = Object.keys(answers).length;
@@ -118,9 +136,6 @@ export default function TraitQuiz() {
   if (results) {
     const { primary, secondary, scores } = results;
     const maxScore = Math.max(...Object.values(scores), 1);
-    const recommendedTraps = primary.recommendedSlugs
-      .map((s) => getTrapBySlug(s))
-      .filter(Boolean);
 
     return (
       <div className="space-y-12 animate-fade-in-up" aria-live="polite">
@@ -219,16 +234,45 @@ export default function TraitQuiz() {
           </div>
         )}
 
-        {/* Recommended traps */}
-        {recommendedTraps.length > 0 && (
+        {/* Recommended Atlas entries */}
+        {atlasPosts.length > 0 && (
           <div>
             <h3 className="mb-4 text-sm font-semibold tracking-wider uppercase text-white/40">
-              Traps to Explore
+              From the Atlas
             </h3>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {recommendedTraps.map(
-                (trap) => trap && <TrapCard key={trap.slug} trap={trap} />
-              )}
+              {atlasPosts.map((post) => (
+                <Link
+                  key={post.slug}
+                  href={`/atlas/${post.slug}`}
+                  className="group relative block rounded-2xl border border-white/5 bg-white/[0.02] p-6 transition-all duration-300 hover:border-cyan-500/20 hover:bg-white/[0.04] hover:shadow-[0_0_40px_-12px_rgba(34,211,238,0.15)]"
+                >
+                  <div className="mb-4 flex items-center gap-3">
+                    <BrainIcon className="w-5 h-5 text-purple-400/70 transition-colors group-hover:text-purple-400" />
+                    <time
+                      dateTime={post.created_at}
+                      className="text-xs text-white/30 tracking-wider uppercase"
+                    >
+                      {new Date(post.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </time>
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-white/90 transition-colors group-hover:text-cyan-400">
+                    {post.title}
+                  </h3>
+                  {post.subtitle && (
+                    <p className="text-sm leading-relaxed text-white/50">
+                      {post.subtitle}
+                    </p>
+                  )}
+                  <div className="mt-4 text-xs font-medium text-cyan-500/60 tracking-wider uppercase transition-colors group-hover:text-cyan-400">
+                    Read entry &rarr;
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         )}
