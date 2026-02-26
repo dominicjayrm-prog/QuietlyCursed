@@ -7,7 +7,7 @@ export default function NotFound() {
       <EyeGlow size="lg" className="mb-8 w-24 h-12 opacity-40" />
       <h1 className="mb-3 text-4xl font-bold text-white/80">Lost in the Atlas</h1>
       <p className="mb-8 max-w-md text-white/40">
-        This trap doesn&apos;t exist — or maybe it does, and you just can&apos;t
+        This trap doesn&apos;t exist. Or maybe it does, and you just can&apos;t
         see it yet.
       </p>
       <Link

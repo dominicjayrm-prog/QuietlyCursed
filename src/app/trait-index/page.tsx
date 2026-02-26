@@ -3,9 +3,9 @@ import { buildMetadata, SITE_URL, SITE_NAME } from "@/lib/seo";
 import TraitIndexLanding from "@/components/TraitIndexLanding";
 
 export const metadata: Metadata = buildMetadata({
-  title: "The Trait Index — Dark Psychology Personality Quiz",
+  title: "The Trait Index | Dark Psychology Personality Quiz",
   description:
-    "A psychologically serious archetype assessment. 12 questions. 6 archetypes. Discover which psychological identity pattern runs deepest — The Watcher, The Prototype, The Climber, The Ghost, The Container, or The Peacemaker.",
+    "A psychologically serious archetype assessment. 12 questions. 6 archetypes. Discover which psychological identity pattern runs deepest: The Watcher, The Prototype, The Climber, The Ghost, The Container, or The Peacemaker.",
   path: "/trait-index",
 });
 
@@ -13,7 +13,7 @@ function TraitIndexJsonLd() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Quiz",
-    name: "The Trait Index — Psychological Archetype Quiz",
+    name: "The Trait Index | Psychological Archetype Quiz",
     description:
       "A 12-question psychological archetype assessment that identifies your dominant identity pattern across six archetypes: The Watcher, The Prototype, The Climber, The Ghost, The Container, and The Peacemaker.",
     url: `${SITE_URL}/trait-index`,

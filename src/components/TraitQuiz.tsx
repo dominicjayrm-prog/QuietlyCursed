@@ -208,7 +208,7 @@ export default function TraitQuiz() {
             </h3>
             <YouTubeEmbed
               videoId={primary.youtubeId}
-              title={`${primary.name} — Recommended`}
+              title={`${primary.name} | Recommended`}
             />
           </div>
         )}
