@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/server";
-import postgres from "postgres";
 
 const MIGRATION_SQL = `
 CREATE TABLE IF NOT EXISTS atlas_posts (
@@ -66,9 +65,8 @@ DO $$ BEGIN CREATE POLICY "Public can insert assessment modules" ON assessment_m
 DO $$ BEGIN CREATE POLICY "Authenticated can read assessment modules" ON assessment_modules FOR SELECT USING (auth.role() = 'authenticated'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 CREATE INDEX IF NOT EXISTS idx_assessment_modules_quiz_result ON assessment_modules (quiz_result_id);
 CREATE INDEX IF NOT EXISTS idx_assessment_modules_type ON assessment_modules (module_type);
--- Atlas scheduling columns
+-- Atlas status columns
 ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS status text DEFAULT 'draft';
-ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS scheduled_at timestamptz;
 ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS published_at timestamptz;
 ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS preview_token text;
 UPDATE atlas_posts SET status = 'published', published_at = created_at WHERE is_published = true AND (status IS NULL OR status = 'draft');
@@ -130,7 +128,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const sql = postgres(dbUrl, { ssl: "require", connect_timeout: 15 });
+  const postgresModule = await import("postgres");
+  const sql = postgresModule.default(dbUrl, { ssl: "require", connect_timeout: 15 });
 
   try {
     await sql`
@@ -372,9 +371,8 @@ export async function POST(request: Request) {
     await sql`CREATE INDEX IF NOT EXISTS idx_assessment_modules_type ON assessment_modules (module_type)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_assessment_modules_created ON assessment_modules (created_at DESC)`;
 
-    // ─── Atlas scheduling columns ────
+    // ─── Atlas status columns ────
     await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS status text DEFAULT 'draft'`;
-    await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS scheduled_at timestamptz`;
     await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS published_at timestamptz`;
     await sql`ALTER TABLE atlas_posts ADD COLUMN IF NOT EXISTS preview_token text`;
     await sql`UPDATE atlas_posts SET status = 'published', published_at = created_at WHERE is_published = true AND (status IS NULL OR status = 'draft')`;

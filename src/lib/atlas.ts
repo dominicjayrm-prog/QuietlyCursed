@@ -1,6 +1,6 @@
 import { getServiceSupabase } from "@/lib/supabase/server";
 
-export type PostStatus = "draft" | "scheduled" | "published" | "archived";
+export type PostStatus = "draft" | "published" | "archived";
 
 export interface AtlasPost {
   id: string;
@@ -21,7 +21,6 @@ export interface AtlasPost {
   tags: string[];
   is_published: boolean;
   status: PostStatus;
-  scheduled_at: string | null;
   published_at: string | null;
   preview_token: string | null;
   created_at: string;
@@ -64,7 +63,7 @@ export async function getPublishedPostBySlug(
   return data;
 }
 
-/** Fetch a post by slug using a preview token (allows viewing drafts/scheduled) */
+/** Fetch a post by slug using a preview token (allows viewing drafts) */
 export async function getPostByPreviewToken(
   slug: string,
   token: string

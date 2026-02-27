@@ -12,9 +12,15 @@ interface Setting {
 export default function SiteSettings() {
   const [featuredVideoUrl, setFeaturedVideoUrl] = useState("");
   const [savedUrl, setSavedUrl] = useState("");
+  const [twitterUrl, setTwitterUrl] = useState("");
+  const [savedTwitter, setSavedTwitter] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [savedYoutube, setSavedYoutube] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingSocials, setSavingSocials] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [socialMessage, setSocialMessage] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   const getToken = useCallback(async () => {
     const supabase = getSupabase();
@@ -39,6 +45,16 @@ export default function SiteSettings() {
         if (video) {
           setFeaturedVideoUrl(video.value);
           setSavedUrl(video.value);
+        }
+        const twitter = data.find((s) => s.key === "social_twitter_url");
+        if (twitter) {
+          setTwitterUrl(twitter.value);
+          setSavedTwitter(twitter.value);
+        }
+        const youtube = data.find((s) => s.key === "social_youtube_url");
+        if (youtube) {
+          setYoutubeUrl(youtube.value);
+          setSavedYoutube(youtube.value);
         }
       } catch {
         // Table may not exist yet — that's fine
@@ -85,6 +101,46 @@ export default function SiteSettings() {
 
   function handleClear() {
     setFeaturedVideoUrl("");
+  }
+
+  async function handleSaveSocials() {
+    setSavingSocials(true);
+    setSocialMessage(null);
+
+    const token = await getToken();
+    if (!token) {
+      setSocialMessage({ type: "err", text: "Not authenticated." });
+      setSavingSocials(false);
+      return;
+    }
+
+    try {
+      // Save both settings
+      const saves = [
+        { key: "social_twitter_url", value: twitterUrl.trim() },
+        { key: "social_youtube_url", value: youtubeUrl.trim() },
+      ];
+
+      for (const setting of saves) {
+        const res = await fetch("/api/admin/settings", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(setting),
+        });
+        if (!res.ok) throw new Error();
+      }
+
+      setSavedTwitter(twitterUrl.trim());
+      setSavedYoutube(youtubeUrl.trim());
+      setSocialMessage({ type: "ok", text: "Saved. Footer will update within 60 seconds." });
+    } catch {
+      setSocialMessage({ type: "err", text: "Failed to save. Make sure the site_settings table exists." });
+    } finally {
+      setSavingSocials(false);
+    }
   }
 
   // Extract video ID for preview
@@ -161,6 +217,68 @@ export default function SiteSettings() {
                 }`}
               >
                 {message.text}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Social Links */}
+      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wider text-white/40">
+          Social Links
+        </h3>
+        <p className="mb-5 text-xs text-white/25">
+          These links appear as icons in the site footer. Leave blank to hide.
+        </p>
+
+        {loading ? (
+          <p className="text-sm text-white/30 animate-pulse">Loading...</p>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-xs uppercase tracking-wider text-white/30">
+                Twitter / X URL
+              </label>
+              <input
+                type="text"
+                value={twitterUrl}
+                onChange={(e) => setTwitterUrl(e.target.value)}
+                placeholder="e.g. https://x.com/quietlycursed"
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-cyan-500/50 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs uppercase tracking-wider text-white/30">
+                YouTube Channel URL
+              </label>
+              <input
+                type="text"
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                placeholder="e.g. https://youtube.com/@quietlycursed"
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:border-cyan-500/50 focus:outline-none"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleSaveSocials}
+                disabled={savingSocials || (twitterUrl.trim() === savedTwitter && youtubeUrl.trim() === savedYoutube)}
+                className="rounded-lg bg-cyan-500/20 border border-cyan-500/30 px-6 py-2.5 text-sm font-medium uppercase tracking-wider text-cyan-400 transition-all hover:bg-cyan-500/30 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {savingSocials ? "Saving..." : "Save Social Links"}
+              </button>
+            </div>
+
+            {socialMessage && (
+              <p
+                className={`text-sm ${
+                  socialMessage.type === "ok" ? "text-green-400/70" : "text-red-400/70"
+                }`}
+              >
+                {socialMessage.text}
               </p>
             )}
           </div>

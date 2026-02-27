@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAuth, getServiceClient, safeError } from "@/lib/api-helpers";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
-import crypto from "crypto";
+/** Generate a random hex token using Web Crypto API */
+function generateToken(): string {
+  const bytes = new Uint8Array(16);
+  globalThis.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 /** GET /api/admin/atlas — list all posts (including drafts) */
 export async function GET(request: Request) {
@@ -52,7 +57,7 @@ export async function POST(request: Request) {
     body.published_at = new Date().toISOString();
   }
   // Always generate a preview token for new posts
-  body.preview_token = crypto.randomBytes(16).toString("hex");
+  body.preview_token = generateToken();
 
   const { data, error } = await service
     .from("atlas_posts")
