@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireAuth, getServiceClient, safeError } from "@/lib/api-helpers";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
-import crypto from "crypto";
+/** Generate a random hex token using Web Crypto API */
+function generateToken(): string {
+  const bytes = new Uint8Array(16);
+  globalThis.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -46,7 +51,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       .eq("id", id)
       .single();
     if (!existing?.preview_token) {
-      body.preview_token = crypto.randomBytes(16).toString("hex");
+      body.preview_token = generateToken();
     }
   }
 
