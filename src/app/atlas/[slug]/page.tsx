@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getPublishedPostBySlug,
+  getPostByPreviewToken,
   getAllPublishedSlugs,
   getRelatedPosts,
   getRelatedPostsByTags,
@@ -19,6 +20,7 @@ import EmailSignup from "@/components/EmailSignup";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }
 
 export const revalidate = 60;
@@ -30,9 +32,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPublishedPostBySlug(slug);
+  const { preview } = await searchParams;
+  let post = await getPublishedPostBySlug(slug);
+  if (!post && preview) {
+    post = await getPostByPreviewToken(slug, preview);
+  }
   if (!post) return buildMetadata();
 
   return buildMetadata({
@@ -45,9 +52,14 @@ export async function generateMetadata({
   });
 }
 
-export default async function AtlasPostPage({ params }: PageProps) {
+export default async function AtlasPostPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const post = await getPublishedPostBySlug(slug);
+  const { preview } = await searchParams;
+  let post = await getPublishedPostBySlug(slug);
+  const isPreview = !post && !!preview;
+  if (!post && preview) {
+    post = await getPostByPreviewToken(slug, preview);
+  }
   if (!post) notFound();
 
   // Prefer tag-based related posts, fall back to manually linked
@@ -64,6 +76,12 @@ export default async function AtlasPostPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: buildAtlasPostJsonLd(post) }}
       />
+
+      {isPreview && (
+        <div className="sticky top-0 z-50 border-b border-yellow-500/30 bg-yellow-500/10 px-6 py-3 text-center text-sm font-medium text-yellow-400">
+          Preview Mode — This post is not published yet.
+        </div>
+      )}
 
       <article className="mx-auto max-w-3xl px-6 py-16 md:py-24">
         {/* Breadcrumb */}
@@ -102,10 +120,10 @@ export default async function AtlasPostPage({ params }: PageProps) {
           <div className="mb-4 flex items-center gap-3">
             <BrainIcon className="w-5 h-5 text-purple-400" />
             <time
-              dateTime={post.created_at}
+              dateTime={post.published_at || post.created_at}
               className="text-xs text-white/30 tracking-wider uppercase"
             >
-              {new Date(post.created_at).toLocaleDateString("en-US", {
+              {new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
                 year: "numeric",

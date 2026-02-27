@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth, getServiceClient, safeError } from "@/lib/api-helpers";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import crypto from "crypto";
 
 /** GET /api/admin/atlas — list all posts (including drafts) */
 export async function GET(request: Request) {
@@ -43,6 +44,15 @@ export async function POST(request: Request) {
   const service = getServiceClient();
   if (!service)
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+
+  // Set defaults for new posts
+  if (!body.status) body.status = "draft";
+  body.is_published = body.status === "published";
+  if (body.status === "published" && !body.published_at) {
+    body.published_at = new Date().toISOString();
+  }
+  // Always generate a preview token for new posts
+  body.preview_token = crypto.randomBytes(16).toString("hex");
 
   const { data, error } = await service
     .from("atlas_posts")

@@ -1,5 +1,7 @@
 import { getServiceSupabase } from "@/lib/supabase/server";
 
+export type PostStatus = "draft" | "scheduled" | "published" | "archived";
+
 export interface AtlasPost {
   id: string;
   title: string;
@@ -18,6 +20,10 @@ export interface AtlasPost {
   related_posts: string[];
   tags: string[];
   is_published: boolean;
+  status: PostStatus;
+  scheduled_at: string | null;
+  published_at: string | null;
+  preview_token: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -30,8 +36,8 @@ export async function getPublishedPosts(): Promise<AtlasPost[]> {
   const { data, error } = await supabase
     .from("atlas_posts")
     .select("*")
-    .eq("is_published", true)
-    .order("created_at", { ascending: false });
+    .eq("status", "published")
+    .order("published_at", { ascending: false, nullsFirst: false });
 
   if (error) {
     console.error("Failed to fetch published posts:", error.message);
@@ -51,7 +57,26 @@ export async function getPublishedPostBySlug(
     .from("atlas_posts")
     .select("*")
     .eq("slug", slug)
-    .eq("is_published", true)
+    .eq("status", "published")
+    .single();
+
+  if (error) return null;
+  return data;
+}
+
+/** Fetch a post by slug using a preview token (allows viewing drafts/scheduled) */
+export async function getPostByPreviewToken(
+  slug: string,
+  token: string
+): Promise<AtlasPost | null> {
+  const supabase = getServiceSupabase();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("atlas_posts")
+    .select("*")
+    .eq("slug", slug)
+    .eq("preview_token", token)
     .single();
 
   if (error) return null;
@@ -66,7 +91,7 @@ export async function getAllPublishedSlugs(): Promise<string[]> {
   const { data } = await supabase
     .from("atlas_posts")
     .select("slug")
-    .eq("is_published", true);
+    .eq("status", "published");
 
   return (data ?? []).map((d) => d.slug);
 }
@@ -81,7 +106,7 @@ export async function getRelatedPosts(ids: string[]): Promise<AtlasPost[]> {
     .from("atlas_posts")
     .select("*")
     .in("id", ids)
-    .eq("is_published", true);
+    .eq("status", "published");
 
   return data ?? [];
 }
@@ -94,7 +119,7 @@ export async function getAllTags(): Promise<string[]> {
   const { data } = await supabase
     .from("atlas_posts")
     .select("tags")
-    .eq("is_published", true);
+    .eq("status", "published");
 
   if (!data) return [];
   const set = new Set<string>();
@@ -117,10 +142,10 @@ export async function getRelatedPostsByTags(
   const { data } = await supabase
     .from("atlas_posts")
     .select("*")
-    .eq("is_published", true)
+    .eq("status", "published")
     .neq("id", postId)
     .overlaps("tags", tags)
-    .order("created_at", { ascending: false })
+    .order("published_at", { ascending: false, nullsFirst: false })
     .limit(limit);
 
   return data ?? [];
