@@ -17,7 +17,7 @@ const RichTextEditor = dynamic(() => import("./RichTextEditor"), {
   ),
 });
 
-type PostStatus = "draft" | "scheduled" | "published" | "archived";
+type PostStatus = "draft" | "published" | "archived";
 
 interface AtlasPost {
   id: string;
@@ -38,7 +38,6 @@ interface AtlasPost {
   tags: string[];
   is_published: boolean;
   status: PostStatus;
-  scheduled_at: string | null;
   published_at: string | null;
   preview_token: string | null;
   created_at: string;
@@ -65,50 +64,14 @@ const EMPTY_FORM: PostForm = {
   tags: [],
   is_published: false,
   status: "draft",
-  scheduled_at: null,
   published_at: null,
 };
 
 const STATUS_STYLES: Record<PostStatus, string> = {
   draft: "bg-yellow-500/10 text-yellow-400",
-  scheduled: "bg-blue-500/10 text-blue-400",
   published: "bg-green-500/10 text-green-400",
   archived: "bg-white/5 text-white/30",
 };
-
-/** Convert UTC ISO to Europe/Madrid local datetime-local string */
-function toMadridLocal(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Europe/Madrid",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-    .format(d)
-    .replace(" ", "T");
-}
-
-/** Convert Europe/Madrid local datetime-local string to UTC ISO */
-function fromMadridLocal(local: string): string {
-  if (!local) return "";
-  // Parse the datetime-local value in Madrid timezone
-  const formatted = local.replace("T", " ") + ":00";
-  // Create a date object treating the input as Madrid time
-  const madridOffset = getMadridOffset(new Date(local));
-  const utcMs = new Date(formatted).getTime() - madridOffset;
-  return new Date(utcMs).toISOString();
-}
-
-/** Get Madrid timezone offset in ms for a given date */
-function getMadridOffset(date: Date): number {
-  const utcStr = date.toLocaleString("en-US", { timeZone: "UTC" });
-  const madridStr = date.toLocaleString("en-US", { timeZone: "Europe/Madrid" });
-  return new Date(madridStr).getTime() - new Date(utcStr).getTime();
-}
 
 function slugify(text: string): string {
   return text
@@ -218,7 +181,6 @@ export default function AtlasManager() {
       tags: post.tags ?? [],
       is_published: post.is_published,
       status: post.status || (post.is_published ? "published" : "draft"),
-      scheduled_at: post.scheduled_at,
       published_at: post.published_at,
     });
     setEditingId(post.id);
@@ -322,13 +284,6 @@ export default function AtlasManager() {
       return;
     }
 
-    // Validate schedule date if scheduling
-    if (form.status === "scheduled" && !form.scheduled_at) {
-      setError("Schedule date is required when status is Scheduled.");
-      setSaving(false);
-      return;
-    }
-
     const payload = {
       ...form,
       subtitle: form.subtitle || null,
@@ -344,7 +299,6 @@ export default function AtlasManager() {
       meta_description: form.meta_description || null,
       tags: form.tags,
       status: form.status,
-      scheduled_at: form.scheduled_at || null,
       published_at: form.published_at || null,
     };
 
@@ -473,7 +427,7 @@ export default function AtlasManager() {
 
         {/* Status filter tabs */}
         <div className="flex gap-1 rounded-lg border border-white/5 bg-white/[0.02] p-1">
-          {(["all", "draft", "scheduled", "published", "archived"] as const).map((s) => (
+          {(["all", "draft", "published", "archived"] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
@@ -533,11 +487,9 @@ export default function AtlasManager() {
                       </div>
                       <p className="mt-1 text-xs text-white/30">
                         /atlas/{post.slug} &middot;{" "}
-                        {postStatus === "scheduled" && post.scheduled_at
-                          ? `Scheduled: ${new Date(post.scheduled_at).toLocaleString("en-GB", { timeZone: "Europe/Madrid", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} (Madrid)`
-                          : postStatus === "published" && post.published_at
-                            ? `Published: ${new Date(post.published_at).toLocaleDateString("en-GB", { timeZone: "Europe/Madrid" })}`
-                            : `Created: ${new Date(post.created_at).toLocaleDateString()}`}
+                        {postStatus === "published" && post.published_at
+                          ? `Published: ${new Date(post.published_at).toLocaleDateString("en-GB", { timeZone: "Europe/Madrid" })}`
+                          : `Created: ${new Date(post.created_at).toLocaleDateString()}`}
                       </p>
                     </div>
 
@@ -900,38 +852,16 @@ export default function AtlasManager() {
                   ...prev,
                   status: newStatus,
                   is_published: newStatus === "published",
-                  scheduled_at: newStatus === "scheduled" ? prev.scheduled_at : null,
                   published_at: newStatus === "published" ? (prev.published_at || new Date().toISOString()) : prev.published_at,
                 }));
               }}
               className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-cyan-500/40 focus:outline-none cursor-pointer"
             >
               <option value="draft">Draft</option>
-              <option value="scheduled">Scheduled</option>
               <option value="published">Published</option>
               <option value="archived">Archived</option>
             </select>
           </div>
-
-          {form.status === "scheduled" && (
-            <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/40">
-                Schedule Date &amp; Time (Europe/Madrid)
-              </label>
-              <input
-                type="datetime-local"
-                value={toMadridLocal(form.scheduled_at)}
-                onChange={(e) => {
-                  const utcIso = e.target.value ? fromMadridLocal(e.target.value) : null;
-                  setForm((prev) => ({ ...prev, scheduled_at: utcIso }));
-                }}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-cyan-500/40 focus:outline-none [color-scheme:dark]"
-              />
-              <p className="mt-1.5 text-xs text-white/20">
-                This post will auto-publish at the selected time. Times are in Europe/Madrid timezone.
-              </p>
-            </div>
-          )}
 
           {form.status === "published" && form.published_at && (
             <p className="text-xs text-green-400/60">
@@ -981,9 +911,7 @@ export default function AtlasManager() {
               ? "Saving..."
               : form.status === "published"
                 ? editingId ? "Update & Publish" : "Create & Publish"
-                : form.status === "scheduled"
-                  ? editingId ? "Update & Schedule" : "Create & Schedule"
-                  : editingId ? "Save Draft" : "Create Draft"}
+                : editingId ? "Save Draft" : "Create Draft"}
           </button>
           {form.status !== "published" && (
             <button

@@ -37,14 +37,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (body.status === "published" && !body.published_at) {
       body.published_at = new Date().toISOString();
     }
-    if (body.status === "draft" || body.status === "archived") {
-      body.scheduled_at = null;
-    }
   }
 
-  // Generate preview token if scheduling or saving a draft (if not already set)
-  if (body.status === "scheduled" || body.status === "draft") {
-    // Check if post already has a preview token
+  // Generate preview token if saving a draft (if not already set)
+  if (body.status === "draft") {
     const { data: existing } = await service
       .from("atlas_posts")
       .select("preview_token")
