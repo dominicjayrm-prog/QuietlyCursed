@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/server";
-import postgres from "postgres";
 
 const MIGRATION_SQL = `
 CREATE TABLE IF NOT EXISTS atlas_posts (
@@ -130,7 +129,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const sql = postgres(dbUrl, { ssl: "require", connect_timeout: 15 });
+  const postgresModule = await import("postgres");
+  const sql = postgresModule.default(dbUrl, { ssl: "require", connect_timeout: 15 });
 
   try {
     await sql`
