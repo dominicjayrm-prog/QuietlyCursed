@@ -17,6 +17,8 @@ const RichTextEditor = dynamic(() => import("./RichTextEditor"), {
   ),
 });
 
+type PostStatus = "draft" | "scheduled" | "published" | "archived";
+
 interface AtlasPost {
   id: string;
   title: string;
@@ -35,11 +37,15 @@ interface AtlasPost {
   related_posts: string[];
   tags: string[];
   is_published: boolean;
+  status: PostStatus;
+  scheduled_at: string | null;
+  published_at: string | null;
+  preview_token: string | null;
   created_at: string;
   updated_at: string;
 }
 
-type PostForm = Omit<AtlasPost, "id" | "created_at" | "updated_at">;
+type PostForm = Omit<AtlasPost, "id" | "created_at" | "updated_at" | "preview_token">;
 
 const EMPTY_FORM: PostForm = {
   title: "",
@@ -58,7 +64,51 @@ const EMPTY_FORM: PostForm = {
   related_posts: [],
   tags: [],
   is_published: false,
+  status: "draft",
+  scheduled_at: null,
+  published_at: null,
 };
+
+const STATUS_STYLES: Record<PostStatus, string> = {
+  draft: "bg-yellow-500/10 text-yellow-400",
+  scheduled: "bg-blue-500/10 text-blue-400",
+  published: "bg-green-500/10 text-green-400",
+  archived: "bg-white/5 text-white/30",
+};
+
+/** Convert UTC ISO to Europe/Madrid local datetime-local string */
+function toMadridLocal(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+    .format(d)
+    .replace(" ", "T");
+}
+
+/** Convert Europe/Madrid local datetime-local string to UTC ISO */
+function fromMadridLocal(local: string): string {
+  if (!local) return "";
+  // Parse the datetime-local value in Madrid timezone
+  const formatted = local.replace("T", " ") + ":00";
+  // Create a date object treating the input as Madrid time
+  const madridOffset = getMadridOffset(new Date(local));
+  const utcMs = new Date(formatted).getTime() - madridOffset;
+  return new Date(utcMs).toISOString();
+}
+
+/** Get Madrid timezone offset in ms for a given date */
+function getMadridOffset(date: Date): number {
+  const utcStr = date.toLocaleString("en-US", { timeZone: "UTC" });
+  const madridStr = date.toLocaleString("en-US", { timeZone: "Europe/Madrid" });
+  return new Date(madridStr).getTime() - new Date(utcStr).getTime();
+}
 
 function slugify(text: string): string {
   return text
@@ -86,11 +136,13 @@ export default function AtlasManager() {
   const [saving, setSaving] = useState(false);
   const [view, setView] = useState<"list" | "form">("list");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingPost, setEditingPost] = useState<AtlasPost | null>(null);
   const [form, setForm] = useState<PostForm>({ ...EMPTY_FORM });
   const [error, setError] = useState("");
   const [titleManuallyEdited, setTitleManuallyEdited] = useState(false);
   const [tableStatus, setTableStatus] = useState<"checking" | "ok" | "missing">("checking");
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<PostStatus | "all">("all");
   const bannerFileRef = useRef<HTMLInputElement>(null);
 
   // Track the editor JSON separately so we don't re-render the editor on every keystroke
@@ -138,6 +190,7 @@ export default function AtlasManager() {
     setForm({ ...EMPTY_FORM });
     editorJsonRef.current = null;
     setEditingId(null);
+    setEditingPost(null);
     setTitleManuallyEdited(false);
     setError("");
     setEditorKey((k) => k + 1);
@@ -164,8 +217,12 @@ export default function AtlasManager() {
       related_posts: post.related_posts ?? [],
       tags: post.tags ?? [],
       is_published: post.is_published,
+      status: post.status || (post.is_published ? "published" : "draft"),
+      scheduled_at: post.scheduled_at,
+      published_at: post.published_at,
     });
     setEditingId(post.id);
+    setEditingPost(post);
     setTitleManuallyEdited(true);
     setError("");
     setEditorKey((k) => k + 1);
@@ -265,6 +322,13 @@ export default function AtlasManager() {
       return;
     }
 
+    // Validate schedule date if scheduling
+    if (form.status === "scheduled" && !form.scheduled_at) {
+      setError("Schedule date is required when status is Scheduled.");
+      setSaving(false);
+      return;
+    }
+
     const payload = {
       ...form,
       subtitle: form.subtitle || null,
@@ -279,6 +343,9 @@ export default function AtlasManager() {
       meta_title: form.meta_title || null,
       meta_description: form.meta_description || null,
       tags: form.tags,
+      status: form.status,
+      scheduled_at: form.scheduled_at || null,
+      published_at: form.published_at || null,
     };
 
     const url = editingId
@@ -329,9 +396,14 @@ export default function AtlasManager() {
     await fetchPosts();
   }
 
-  async function handleTogglePublish(post: AtlasPost) {
+  async function handleStatusChange(post: AtlasPost, newStatus: PostStatus) {
     const token = await getToken();
     if (!token) return;
+
+    const body: Record<string, unknown> = { status: newStatus };
+    if (newStatus === "published") {
+      body.published_at = new Date().toISOString();
+    }
 
     await fetch(`/api/admin/atlas/${post.id}`, {
       method: "PATCH",
@@ -339,7 +411,7 @@ export default function AtlasManager() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ is_published: !post.is_published }),
+      body: JSON.stringify(body),
     });
     await fetchPosts();
   }
@@ -399,6 +471,28 @@ export default function AtlasManager() {
           </button>
         </div>
 
+        {/* Status filter tabs */}
+        <div className="flex gap-1 rounded-lg border border-white/5 bg-white/[0.02] p-1">
+          {(["all", "draft", "scheduled", "published", "archived"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`flex-1 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-all cursor-pointer capitalize ${
+                statusFilter === s
+                  ? "bg-cyan-500/10 text-cyan-400"
+                  : "text-white/40 hover:text-white/60"
+              }`}
+            >
+              {s}{" "}
+              <span className="text-white/20">
+                ({s === "all"
+                  ? posts.length
+                  : posts.filter((p) => (p.status || (p.is_published ? "published" : "draft")) === s).length})
+              </span>
+            </button>
+          ))}
+        </div>
+
         {loading ? (
           <div className="py-12 text-center text-sm text-white/30">
             Loading posts...
@@ -411,54 +505,75 @@ export default function AtlasManager() {
           </div>
         ) : (
           <div className="space-y-3">
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-white/10"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="truncate text-sm font-medium text-white/80">
-                      {post.title}
-                    </h3>
-                    <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
-                        post.is_published
-                          ? "bg-green-500/10 text-green-400"
-                          : "bg-yellow-500/10 text-yellow-400"
-                      }`}
-                    >
-                      {post.is_published ? "Published" : "Draft"}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-white/30">
-                    /atlas/{post.slug} &middot;{" "}
-                    {new Date(post.created_at).toLocaleDateString()}
-                  </p>
-                </div>
+            {posts
+              .filter((post) => {
+                if (statusFilter === "all") return true;
+                const postStatus = post.status || (post.is_published ? "published" : "draft");
+                return postStatus === statusFilter;
+              })
+              .map((post) => {
+                const postStatus = post.status || (post.is_published ? "published" : "draft");
+                return (
+                  <div
+                    key={post.id}
+                    className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-white/10"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className="truncate text-sm font-medium text-white/80">
+                          {post.title}
+                        </h3>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                            STATUS_STYLES[postStatus as PostStatus] || STATUS_STYLES.draft
+                          }`}
+                        >
+                          {postStatus}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-white/30">
+                        /atlas/{post.slug} &middot;{" "}
+                        {postStatus === "scheduled" && post.scheduled_at
+                          ? `Scheduled: ${new Date(post.scheduled_at).toLocaleString("en-GB", { timeZone: "Europe/Madrid", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} (Madrid)`
+                          : postStatus === "published" && post.published_at
+                            ? `Published: ${new Date(post.published_at).toLocaleDateString("en-GB", { timeZone: "Europe/Madrid" })}`
+                            : `Created: ${new Date(post.created_at).toLocaleDateString()}`}
+                      </p>
+                    </div>
 
-                <div className="ml-4 flex items-center gap-2">
-                  <button
-                    onClick={() => handleTogglePublish(post)}
-                    className="rounded-md bg-white/5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/10 hover:text-white/60 cursor-pointer"
-                  >
-                    {post.is_published ? "Unpublish" : "Publish"}
-                  </button>
-                  <button
-                    onClick={() => openEdit(post)}
-                    className="rounded-md bg-white/5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/10 hover:text-white/60 cursor-pointer"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(post.id)}
-                    className="rounded-md bg-red-500/10 px-3 py-1.5 text-xs text-red-400/60 hover:bg-red-500/20 hover:text-red-400 cursor-pointer"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+                    <div className="ml-4 flex items-center gap-2">
+                      {postStatus !== "published" && (
+                        <button
+                          onClick={() => handleStatusChange(post, "published")}
+                          className="rounded-md bg-green-500/10 px-3 py-1.5 text-xs text-green-400/60 hover:bg-green-500/20 hover:text-green-400 cursor-pointer"
+                        >
+                          Publish Now
+                        </button>
+                      )}
+                      {postStatus === "published" && (
+                        <button
+                          onClick={() => handleStatusChange(post, "draft")}
+                          className="rounded-md bg-white/5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/10 hover:text-white/60 cursor-pointer"
+                        >
+                          Unpublish
+                        </button>
+                      )}
+                      <button
+                        onClick={() => openEdit(post)}
+                        className="rounded-md bg-white/5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/10 hover:text-white/60 cursor-pointer"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        className="rounded-md bg-red-500/10 px-3 py-1.5 text-xs text-red-400/60 hover:bg-red-500/20 hover:text-red-400 cursor-pointer"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>
@@ -760,10 +875,10 @@ export default function AtlasManager() {
                   <span className="text-sm text-white/60">{p.title}</span>
                   <span
                     className={`ml-auto text-[10px] uppercase tracking-wider ${
-                      p.is_published ? "text-green-400/60" : "text-yellow-400/60"
+                      STATUS_STYLES[(p.status || (p.is_published ? "published" : "draft")) as PostStatus] || "text-white/30"
                     }`}
                   >
-                    {p.is_published ? "Published" : "Draft"}
+                    {p.status || (p.is_published ? "published" : "draft")}
                   </span>
                 </label>
               ))}
@@ -771,33 +886,121 @@ export default function AtlasManager() {
           </div>
         )}
 
-        {/* Publish Toggle */}
-        <div className="flex items-center gap-3 rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.is_published}
-              onChange={(e) => updateField("is_published", e.target.checked)}
-              className="rounded border-white/20 accent-cyan-500"
-            />
-            <span className="text-sm text-white/60">
-              {form.is_published ? "Published" : "Draft"} &mdash;{" "}
-              {form.is_published
-                ? "This post is live on the site."
-                : "Save as draft. Not visible to the public."}
-            </span>
-          </label>
+        {/* Status & Scheduling */}
+        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-5 space-y-4">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/40">
+              Status
+            </label>
+            <select
+              value={form.status}
+              onChange={(e) => {
+                const newStatus = e.target.value as PostStatus;
+                setForm((prev) => ({
+                  ...prev,
+                  status: newStatus,
+                  is_published: newStatus === "published",
+                  scheduled_at: newStatus === "scheduled" ? prev.scheduled_at : null,
+                  published_at: newStatus === "published" ? (prev.published_at || new Date().toISOString()) : prev.published_at,
+                }));
+              }}
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-cyan-500/40 focus:outline-none cursor-pointer"
+            >
+              <option value="draft">Draft</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="published">Published</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+
+          {form.status === "scheduled" && (
+            <div>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/40">
+                Schedule Date &amp; Time (Europe/Madrid)
+              </label>
+              <input
+                type="datetime-local"
+                value={toMadridLocal(form.scheduled_at)}
+                onChange={(e) => {
+                  const utcIso = e.target.value ? fromMadridLocal(e.target.value) : null;
+                  setForm((prev) => ({ ...prev, scheduled_at: utcIso }));
+                }}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-cyan-500/40 focus:outline-none [color-scheme:dark]"
+              />
+              <p className="mt-1.5 text-xs text-white/20">
+                This post will auto-publish at the selected time. Times are in Europe/Madrid timezone.
+              </p>
+            </div>
+          )}
+
+          {form.status === "published" && form.published_at && (
+            <p className="text-xs text-green-400/60">
+              Published: {new Date(form.published_at).toLocaleString("en-GB", { timeZone: "Europe/Madrid", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} (Madrid)
+            </p>
+          )}
+
+          {/* Preview link */}
+          {editingPost?.preview_token && form.status !== "published" && (
+            <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-4 py-3">
+              <p className="text-xs font-medium text-blue-400 mb-1">Preview Link</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 truncate text-xs text-white/50">
+                  /atlas/{form.slug}?preview={editingPost.preview_token}
+                </code>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = `${window.location.origin}/atlas/${form.slug}?preview=${editingPost.preview_token}`;
+                    navigator.clipboard.writeText(url).catch(() => {});
+                  }}
+                  className="shrink-0 rounded bg-blue-500/10 px-2.5 py-1 text-[10px] font-medium text-blue-400 hover:bg-blue-500/20 cursor-pointer"
+                >
+                  Copy
+                </button>
+                <a
+                  href={`/atlas/${form.slug}?preview=${editingPost.preview_token}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 rounded bg-blue-500/10 px-2.5 py-1 text-[10px] font-medium text-blue-400 hover:bg-blue-500/20"
+                >
+                  Open
+                </a>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-wrap gap-3 pt-2">
           <button
             onClick={handleSave}
             disabled={saving}
             className="inline-flex items-center gap-2 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-6 py-2.5 text-sm font-medium text-cyan-400 transition-colors hover:bg-cyan-500/20 disabled:opacity-50 cursor-pointer"
           >
-            {saving ? "Saving..." : editingId ? "Update Post" : "Create Post"}
+            {saving
+              ? "Saving..."
+              : form.status === "published"
+                ? editingId ? "Update & Publish" : "Create & Publish"
+                : form.status === "scheduled"
+                  ? editingId ? "Update & Schedule" : "Create & Schedule"
+                  : editingId ? "Save Draft" : "Create Draft"}
           </button>
+          {form.status !== "published" && (
+            <button
+              onClick={async () => {
+                setForm((prev) => ({
+                  ...prev,
+                  status: "published" as PostStatus,
+                  is_published: true,
+                  published_at: new Date().toISOString(),
+                }));
+              }}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 px-6 py-2.5 text-sm font-medium text-green-400 transition-colors hover:bg-green-500/20 disabled:opacity-50 cursor-pointer"
+            >
+              Set to Publish
+            </button>
+          )}
           <button
             onClick={() => setView("list")}
             className="rounded-lg bg-white/5 px-6 py-2.5 text-sm text-white/40 hover:bg-white/10 cursor-pointer"

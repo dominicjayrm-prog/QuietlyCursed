@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireAuth, getServiceClient, safeError } from "@/lib/api-helpers";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import crypto from "crypto";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -24,6 +26,30 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (!service)
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
 
+  // Sync is_published with status for backwards compatibility
+  if (body.status) {
+    body.is_published = body.status === "published";
+    if (body.status === "published" && !body.published_at) {
+      body.published_at = new Date().toISOString();
+    }
+    if (body.status === "draft" || body.status === "archived") {
+      body.scheduled_at = null;
+    }
+  }
+
+  // Generate preview token if scheduling or saving a draft (if not already set)
+  if (body.status === "scheduled" || body.status === "draft") {
+    // Check if post already has a preview token
+    const { data: existing } = await service
+      .from("atlas_posts")
+      .select("preview_token")
+      .eq("id", id)
+      .single();
+    if (!existing?.preview_token) {
+      body.preview_token = crypto.randomBytes(16).toString("hex");
+    }
+  }
+
   const { data, error } = await service
     .from("atlas_posts")
     .update(body)
@@ -32,6 +58,12 @@ export async function PATCH(request: Request, context: RouteContext) {
     .single();
 
   if (error) return safeError("admin/atlas PATCH", error);
+
+  // Revalidate public pages when status changes
+  revalidatePath("/atlas");
+  if (data?.slug) {
+    revalidatePath(`/atlas/${data.slug}`);
+  }
 
   return NextResponse.json(data);
 }
