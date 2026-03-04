@@ -17,7 +17,7 @@ export function buildMetadata(overrides?: {
 }): Metadata {
   const title = overrides?.title
     ? `${overrides.title} | ${SITE_NAME}`
-    : SITE_NAME;
+    : `${SITE_NAME} | Psychological Atlas of Mind Traps`;
   const description = overrides?.description ?? DEFAULT_DESCRIPTION;
   const url = overrides?.path ? `${SITE_URL}${overrides.path}` : SITE_URL;
   const image = overrides?.image ?? `${SITE_URL}/opengraph-image`;

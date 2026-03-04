@@ -63,7 +63,11 @@ export default function EmailSignup() {
         onSubmit={handleSubmit}
         className="mx-auto flex max-w-md gap-3"
       >
+        <label htmlFor="email-signup" className="sr-only">
+          Email address
+        </label>
         <input
+          id="email-signup"
           type="email"
           value={email}
           onChange={(e) => {

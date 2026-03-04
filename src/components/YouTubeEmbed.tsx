@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface YouTubeEmbedProps {
   videoId: string;
@@ -18,11 +19,12 @@ export default function YouTubeEmbed({ videoId, title }: YouTubeEmbedProps) {
         className="relative aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-neutral-900 group cursor-pointer"
         aria-label={`Play video: ${title}`}
       >
-        <img
+        <Image
           src={thumbnailUrl}
           alt={title}
-          className="absolute inset-0 h-full w-full object-cover opacity-60 transition-opacity group-hover:opacity-80"
-          loading="lazy"
+          fill
+          sizes="(max-width: 768px) 100vw, 672px"
+          className="object-cover opacity-60 transition-opacity group-hover:opacity-80"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/20 backdrop-blur-sm border border-cyan-400/30 transition-transform group-hover:scale-110">
