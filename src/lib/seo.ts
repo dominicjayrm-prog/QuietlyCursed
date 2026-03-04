@@ -20,7 +20,7 @@ export function buildMetadata(overrides?: {
     : SITE_NAME;
   const description = overrides?.description ?? DEFAULT_DESCRIPTION;
   const url = overrides?.path ? `${SITE_URL}${overrides.path}` : SITE_URL;
-  const image = overrides?.image ?? `${SITE_URL}/og-default.png`;
+  const image = overrides?.image ?? `${SITE_URL}/opengraph-image`;
   const ogType = overrides?.type ?? "website";
 
   return {
