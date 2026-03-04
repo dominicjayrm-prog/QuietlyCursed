@@ -84,6 +84,8 @@ export function buildTrapJsonLd(trap: Trap): string {
       "@type": "VideoObject",
       name: trap.title,
       description: trap.tagline,
+      thumbnailUrl: `https://img.youtube.com/vi/${trap.youtubeId}/maxresdefault.jpg`,
+      uploadDate: trap.publishedAt,
       embedUrl: `https://www.youtube.com/embed/${trap.youtubeId}`,
     };
   }
@@ -137,6 +139,8 @@ export function buildAtlasPostJsonLd(post: AtlasPost): string {
       "@type": "VideoObject",
       name: post.title,
       description: post.subtitle || post.title,
+      thumbnailUrl: `https://img.youtube.com/vi/${post.youtube_video_id}/maxresdefault.jpg`,
+      uploadDate: post.published_at || post.created_at,
       embedUrl: `https://www.youtube.com/embed/${post.youtube_video_id}`,
     };
   }
