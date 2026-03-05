@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import FadeIn from "@/components/FadeIn";
 
 type AnswerBlock =
   | { type: "text"; content: string }
+  | { type: "rich"; content: ReactNode; plain: string }
   | { type: "bullets"; items: string[] };
 
 interface FAQItem {
@@ -67,9 +69,26 @@ const FAQ_ITEMS: FAQItem[] = [
           "In practice, the fawn response means you instinctively read what others need and shape yourself around it. You avoid conflict not because you're peaceful, but because disagreement feels existentially unsafe. You may struggle with setting boundaries, feel responsible for other people's emotional states, or lose track of your own preferences entirely.",
       },
       {
-        type: "text",
-        content:
-          "The fawn response typically develops in environments where emotional safety depended on keeping someone else calm or pleased. Over time, it stops being something you do and becomes something you are. Recognising it is the first step toward distinguishing genuine empathy from automatic self-erasure.",
+        type: "rich",
+        plain:
+          "The fawn response typically develops in environments where emotional safety depended on keeping someone else calm or pleased. Over time, it stops being something you do and becomes something you are. Recognising it is the first step toward distinguishing genuine empathy from automatic self-erasure. We explore this pattern in depth in The Psychological Trap of Being Too Nice.",
+        content: (
+          <>
+            The fawn response typically develops in environments where emotional
+            safety depended on keeping someone else calm or pleased. Over time,
+            it stops being something you do and becomes something you are.
+            Recognising it is the first step toward distinguishing genuine
+            empathy from automatic self-erasure. We explore this pattern in
+            depth in{" "}
+            <Link
+              href="/atlas/the-psychological-trap-of-being-too-nice"
+              className="text-cyan-400 underline decoration-cyan-400/30 underline-offset-2 transition-colors hover:text-cyan-300"
+            >
+              The Psychological Trap of Being Too Nice
+            </Link>
+            .
+          </>
+        ),
       },
     ],
   },
@@ -122,9 +141,23 @@ const FAQ_ITEMS: FAQItem[] = [
           "The fawn response is heavily implicated here. It trains you to prioritise others' comfort as a form of self-protection. Overthinking every interaction, replaying conversations, and preemptively adjusting your behaviour are all symptoms of a system that learned it wasn't safe to take up space.",
       },
       {
-        type: "text",
-        content:
-          "Real boundary work isn't about scripts or assertiveness techniques. It's about rewiring the belief that your needs are an inconvenience.",
+        type: "rich",
+        plain:
+          "Real boundary work isn't about scripts or assertiveness techniques. It's about rewiring the belief that your needs are an inconvenience. If this pattern started early, our piece on Oldest Sibling Syndrome explores how it takes root.",
+        content: (
+          <>
+            Real boundary work isn&apos;t about scripts or assertiveness
+            techniques. It&apos;s about rewiring the belief that your needs are
+            an inconvenience. If this pattern started early, our piece on{" "}
+            <Link
+              href="/atlas/oldest-sibling-syndrome-how-you-got-recruited-into-adulthood"
+              className="text-cyan-400 underline decoration-cyan-400/30 underline-offset-2 transition-colors hover:text-cyan-300"
+            >
+              Oldest Sibling Syndrome
+            </Link>{" "}
+            explores how it takes root.
+          </>
+        ),
       },
     ],
   },
@@ -176,9 +209,23 @@ const FAQ_ITEMS: FAQItem[] = [
           "Over time, this pattern erodes intimacy because real connection requires emotional visibility. If you learned early that expressing vulnerability was unsafe, weak, or burdensome, suppression became your default coping mechanism. It protected you then. But in adult relationships, it means the person closest to you is bonding with a managed version of who you are, not the actual one.",
       },
       {
-        type: "text",
-        content:
-          "Recognising emotional suppression is where you start understanding why relationships may feel close in proximity but distant in depth.",
+        type: "rich",
+        plain:
+          "Recognising emotional suppression is where you start understanding why relationships may feel close in proximity but distant in depth. We unpack this pattern further in The Hidden Cost of Being the \"Strong One\".",
+        content: (
+          <>
+            Recognising emotional suppression is where you start understanding
+            why relationships may feel close in proximity but distant in depth.
+            We unpack this pattern further in{" "}
+            <Link
+              href="/atlas/the-hidden-cost-of-being-the-strong-one"
+              className="text-cyan-400 underline decoration-cyan-400/30 underline-offset-2 transition-colors hover:text-cyan-300"
+            >
+              The Hidden Cost of Being the &ldquo;Strong One&rdquo;
+            </Link>
+            .
+          </>
+        ),
       },
     ],
   },
@@ -206,9 +253,23 @@ const FAQ_ITEMS: FAQItem[] = [
           "The Trait Index and the Atlas are designed to accelerate this process by naming the architecture you're running. When you can identify that you're defaulting to a fawn response or retreating into strategic absence, you gain something powerful: choice. Not instant change, but the capacity to interrupt automatic patterns. Over time, that interruption compounds.",
       },
       {
-        type: "text",
-        content:
-          "Self-awareness doesn't fix you. It gives you the option to stop operating on autopilot.",
+        type: "rich",
+        plain:
+          "Self-awareness doesn't fix you. It gives you the option to stop operating on autopilot. For a deeper look at how this plays out in high-functioning minds, see Gifted Minds: How Intelligence Becomes Your Worst Enemy.",
+        content: (
+          <>
+            Self-awareness doesn&apos;t fix you. It gives you the option to stop
+            operating on autopilot. For a deeper look at how this plays out in
+            high-functioning minds, see{" "}
+            <Link
+              href="/atlas/Gifted-Minds-How-Intelligence-Becomes-Your-Worst-Enemy"
+              className="text-cyan-400 underline decoration-cyan-400/30 underline-offset-2 transition-colors hover:text-cyan-300"
+            >
+              Gifted Minds: How Intelligence Becomes Your Worst Enemy
+            </Link>
+            .
+          </>
+        ),
       },
     ],
   },
@@ -218,7 +279,11 @@ const FAQ_ITEMS: FAQItem[] = [
 function flattenAnswer(blocks: AnswerBlock[]): string {
   return blocks
     .map((b) =>
-      b.type === "text" ? b.content : b.items.map((i) => `• ${i}`).join(" "),
+      b.type === "text"
+        ? b.content
+        : b.type === "rich"
+          ? b.plain
+          : b.items.map((i) => `• ${i}`).join(" "),
     )
     .join(" ");
 }
@@ -275,6 +340,13 @@ function FAQItemCard({
           <div className="space-y-3">
             {item.answer.map((block, i) =>
               block.type === "text" ? (
+                <p
+                  key={i}
+                  className="text-sm leading-[1.85] text-white/50"
+                >
+                  {block.content}
+                </p>
+              ) : block.type === "rich" ? (
                 <p
                   key={i}
                   className="text-sm leading-[1.85] text-white/50"
